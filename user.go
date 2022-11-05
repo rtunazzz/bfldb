@@ -1,7 +1,9 @@
 package ftl
 
 import (
+	"io"
 	"log"
+	"os"
 	"time"
 )
 
@@ -24,6 +26,8 @@ func NewUser(UID string, opts ...UserOption) User {
 		d:    time.Second * 5,
 	}
 
+	u.log.SetOutput(io.Discard)
+
 	for _, opt := range opts {
 		opt(&u)
 	}
@@ -31,9 +35,17 @@ func NewUser(UID string, opts ...UserOption) User {
 	return u
 }
 
-func WithLogger(l *log.Logger) UserOption {
+// WithCustomLogger writes all user logs using the logger provided.
+func WithCustomLogger(l *log.Logger) UserOption {
 	return func(u *User) {
 		u.log = l
+	}
+}
+
+// WithLogging writes all user logs to STDOUT.
+func WithLogging() UserOption {
+	return func(u *User) {
+		u.log.SetOutput(os.Stdout)
 	}
 }
 
