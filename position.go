@@ -12,6 +12,13 @@ const (
 	Long
 )
 
+func (pd PositionDirection) String() string {
+	if pd == Short {
+		return "SHORT"
+	}
+	return "LONG"
+}
+
 // PositionType is a type of a position
 type PositionType int
 
