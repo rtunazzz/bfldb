@@ -3,7 +3,7 @@ package ftl
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -74,7 +74,7 @@ func getOpenPositions(uid string) (upr userPosRes, err error) {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		err = fmt.Errorf("failed to read request body: %w", err)
 		return
