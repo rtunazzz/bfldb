@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	apiBase = "https://www.binance.com/bapi/futures/v1/public/future/leaderboard"
+)
+
 // rawPosition represent details of an individual position returned from Binance's public leaderboard API.
 type rawPosition struct {
 	Symbol          string  `json:"symbol"`
@@ -42,9 +46,9 @@ type userPosRes struct {
 
 // getOpenPositions gets all currently open positions for a user.
 func getOpenPositions(uid string) (upr userPosRes, err error) {
-	url := "https://www.binance.com/bapi/futures/v1/public/future/leaderboard/getOtherPosition"
-
-	req, err := http.NewRequest("POST", url,
+	req, err := http.NewRequest(
+		"POST",
+		apiBase+"/getOtherPosition",
 		strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)),
 	)
 	if err != nil {
