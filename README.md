@@ -7,3 +7,6 @@
 - [ ] Add fetch method for `/getOtherLeaderboardBaseInfo` endpoint
 - [ ] Add documentation & example usage
 - [ ] Complete TODO's
+- [ ] Add tests
+- [ ] Add CI
+- [ ] Publish v1.0.0 :tada:
