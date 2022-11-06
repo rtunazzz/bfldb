@@ -9,47 +9,27 @@ import (
 )
 
 const (
-	apiBase = "https://www.binance.com/bapi/futures/v1/public/future/leaderboard"
+	apiBase = "https://www.binance.com/bapi/futures/v1/public/future/leaderboard" // Base endpoint
 )
 
-// rawPosition represent details of an individual position returned from Binance's public leaderboard API.
-type rawPosition struct {
-	Symbol          string  `json:"symbol"`
-	EntryPrice      float64 `json:"entryPrice"`
-	MarkPrice       float64 `json:"markPrice"`
-	Pnl             float64 `json:"pnl"`
-	Roe             float64 `json:"roe"`
-	Amount          float64 `json:"amount"`
-	UpdateTimeStamp int64   `json:"updateTimeStamp"`
-	Yellow          bool    `json:"yellow"`
-	TradeBefore     bool    `json:"tradeBefore"`
-	Leverage        int     `json:"leverage"`
-
-	// UpdateTime      []int   `json:"updateTime"`
+// LdbAPIRes represents a response from Binance's Futures LDB API.
+type LdbAPIRes[T UserPositionData | UserBaseInfo] struct {
+	Success       bool        `json:"success"`       // Whether or not the request was successful
+	Code          string      `json:"code"`          // Error code, "000000" means success
+	Message       string      `json:"message"`       // Error message
+	Data          T           `json:"data"`          // Data
+	MessageDetail interface{} `json:"messageDetail"` // ???
 }
 
-// userPosRes represents a response containing all position details for a particular user.
-//
-// This struct appears in the response of the getOtherPosition route on Binance's public leaderboard API.
-type userPosRes struct {
-	Success bool   `json:"success"`
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Data    struct {
-		OtherPositionRetList []rawPosition `json:"otherPositionRetList"`
-		UpdateTimeStamp      int64         `json:"updateTimeStamp"`
-		// UpdateTime           []int             `json:"updateTime"`
-	} `json:"data"`
-
-	// MessageDetail interface{} `json:"messageDetail"`
-}
-
-// getOpenPositions gets all currently open positions for a user.
-func getOpenPositions(uid string) (upr userPosRes, err error) {
+// doPost POSTs the data passed in to the path on Binance's leaderboard API.
+func doPost[T UserPositionData | UserBaseInfo](path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
 	req, err := http.NewRequest(
 		"POST",
-		apiBase+"/getOtherPosition",
-		strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)),
+		apiBase+path,
+		data,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to create request: %w", err)
@@ -84,5 +64,56 @@ func getOpenPositions(uid string) (upr userPosRes, err error) {
 		return
 	}
 
-	return upr, json.Unmarshal(body, &upr)
+	return ldbres, json.Unmarshal(body, &ldbres)
+}
+
+// ***************************** /getOtherPosition *****************************
+
+// UserPositionData represents data about user's positions.
+type UserPositionData struct {
+	OtherPositionRetList []rawPosition `json:"otherPositionRetList"`
+	UpdateTimeStamp      int64         `json:"updateTimeStamp"`
+	UpdateTime           []int         `json:"updateTime"`
+}
+
+// rawPosition represent details of an individual position returned.
+type rawPosition struct {
+	Symbol          string  `json:"symbol"`
+	EntryPrice      float64 `json:"entryPrice"`
+	MarkPrice       float64 `json:"markPrice"`
+	Pnl             float64 `json:"pnl"`
+	Roe             float64 `json:"roe"`
+	Amount          float64 `json:"amount"`
+	UpdateTimeStamp int64   `json:"updateTimeStamp"`
+	UpdateTime      []int   `json:"updateTime"`
+	Yellow          bool    `json:"yellow"`
+	TradeBefore     bool    `json:"tradeBefore"`
+	Leverage        int     `json:"leverage"`
+}
+
+// GetOtherPosition gets all currently open positions for a user.
+func GetOtherPosition(uid string) (upr LdbAPIRes[UserPositionData], err error) {
+	return doPost[UserPositionData]("/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)))
+}
+
+// ***************************** /getOtherLeaderboardBaseInfo *****************************
+
+// UserBaseInfo represents user's data.
+type UserBaseInfo struct {
+	NickName               string      `json:"nickName"`
+	UserPhotoURL           string      `json:"userPhotoUrl"`
+	PositionShared         bool        `json:"positionShared"`
+	DeliveryPositionShared bool        `json:"deliveryPositionShared"`
+	FollowingCount         int         `json:"followingCount"`
+	FollowerCount          int         `json:"followerCount"`
+	TwitterURL             string      `json:"twitterUrl"`
+	Introduction           string      `json:"introduction"`
+	TwShared               bool        `json:"twShared"`
+	IsTwTrader             bool        `json:"isTwTrader"`
+	OpenID                 interface{} `json:"openId"`
+}
+
+// GetOtherLeaderboardBaseInfo gets information about an user.
+func GetOtherLeaderboardBaseInfo(uid string) (upr LdbAPIRes[UserBaseInfo], err error) {
+	return doPost[UserBaseInfo]("/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)))
 }
