@@ -1,7 +1,7 @@
 # binance-ftl
 > Wrapper around Binance's Futures Leaderboard API, in Go.
 
-** THIS IS STILL WORK IN PROGRESS**
+*THIS IS STILL WORK IN PROGRESS*
 
 # Installation
 ```bash
@@ -12,10 +12,12 @@ go get -u github.com/rtunazzz/binance-ftl
 - [x] Add fetch method for `/getOtherLeaderboardBaseInfo` endpoint
 - [x] Add documentation & example usage
 - [x] Add proxy support
-- [ ] Publish v0.0.1 :tada:
-- [ ] Complete TODO's
+- [ ] Add fetch method for `/searchNickname` endpoint
+- [ ] Make `doPost` method public
 - [ ] Add tests
+- [ ] Publish v0.0.1 :tada:
 - [ ] Add CI
+- [ ] Complete TODO's
 
 # Example
 
