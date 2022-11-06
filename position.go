@@ -31,12 +31,12 @@ const (
 
 // Position represents a trade position.
 type Position struct {
-	// TODO: consider adding here other position details such as MarkPrice, PNL, leverage etc.
-	// (and exclude those from hashing)
-	// https://github.com/mitchellh/hashstructure/blob/master/hashstructure.go#L88-L97
+	// TODO: Verify that there can only be one position with the same ticker on Binance's leaderboard
+	// so it's impossible to have for example one BTCUSDT LONG at 20k and ANOTHER at 30k
+	// if that IS possible, adjust the hashing adequately
 
 	Type       PositionType      `hash:"ignore"` // Type of the position
-	Direction  PositionDirection `hash:"ignore"` // Direction of the position (e.g. LONG / SHORT)
+	Direction  PositionDirection // Direction of the position (e.g. LONG / SHORT)
 	Ticker     string            // Ticker of the position (e.g. BTCUSDT)
 	EntryPrice float64           `hash:"ignore"` // Entry price
 	Amount     float64           `hash:"ignore"` // Amount
