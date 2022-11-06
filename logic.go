@@ -47,6 +47,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 	return cp, ce
 }
 
+// handlePositions parses raw positions, determines their type and sends the new ones through a channel.
 func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- error) {
 	// used will be used for checking whether or not a position was already handled
 	// (thus if it's a new position or if it hasn't been present in the latest fetch and thus been closed)
@@ -103,6 +104,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 	// TODO: rework this logic so we aren't looping twice over the maps when it could be done in one loop
 	for h, p := range u.poss {
 		if _, ok := used[h]; ok {
+			u.log.Printf("%d is used\n", h)
 			continue
 		}
 
@@ -115,6 +117,9 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		if !u.ff {
 			cp <- p
 		}
+
+		// remove the position from user's positions
+		delete(u.poss, h)
 	}
 
 	// set first run to false because we just completed it

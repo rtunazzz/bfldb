@@ -13,7 +13,7 @@ go get -u github.com/rtunazzz/binance-ftl
 ```
 
 ## TODO
-- [ ] Add test for `handlePositions`
+- [x] Add test for `handlePositions`
 - [ ] Add CI
 - [ ] Complete TODO's
 
@@ -51,7 +51,7 @@ func main() {
 }
 ```
 
-## Searching for user by his nickname
+## Searching for user by their nickname
 
 ```golang
 package main
