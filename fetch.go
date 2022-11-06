@@ -13,7 +13,7 @@ const (
 )
 
 // LdbAPIRes represents a response from Binance's Futures LDB API.
-type LdbAPIRes[T UserPositionData | UserBaseInfo] struct {
+type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
 	Success       bool        `json:"success"`       // Whether or not the request was successful
 	Code          string      `json:"code"`          // Error code, "000000" means success
 	Message       string      `json:"message"`       // Error message
@@ -22,7 +22,7 @@ type LdbAPIRes[T UserPositionData | UserBaseInfo] struct {
 }
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost[T UserPositionData | UserBaseInfo](c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
+func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -92,7 +92,7 @@ type rawPosition struct {
 }
 
 // GetOtherPosition gets all currently open positions for a user.
-func (u *User) GetOtherPosition() (upr LdbAPIRes[UserPositionData], err error) {
+func (u *User) GetOtherPosition() (LdbAPIRes[UserPositionData], error) {
 	return doPost[UserPositionData](u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }
 
@@ -114,6 +114,20 @@ type UserBaseInfo struct {
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
-func (u *User) GetOtherLeaderboardBaseInfo() (upr LdbAPIRes[UserBaseInfo], err error) {
+func (u *User) GetOtherLeaderboardBaseInfo() (LdbAPIRes[UserBaseInfo], error) {
 	return doPost[UserBaseInfo](u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
+}
+
+// ************************************************** /searchNickname **************************************************
+
+type NicknameDetails struct {
+	EncryptedUID  string `json:"encryptedUid"`
+	Nickname      string `json:"nickname"`
+	FollowerCount int    `json:"followerCount"`
+	UserPhotoURL  string `json:"userPhotoUrl"`
+}
+
+// SearchNickname searches for a nickname.
+func SearchNickname(nickname string) (LdbAPIRes[[]NicknameDetails], error) {
+	return doPost[[]NicknameDetails](http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)))
 }
