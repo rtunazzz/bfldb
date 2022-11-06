@@ -3,6 +3,7 @@ package ftl
 import (
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -13,6 +14,8 @@ type User struct {
 	log  *log.Logger         // Logger
 	poss map[uint64]Position // hashmap of positions user is currently in
 	d    time.Duration       // duration between requests updating current positions
+	c    *http.Client        // http client
+	ff   bool                // indicating first fetch
 }
 
 type UserOption func(*User)
@@ -24,6 +27,8 @@ func NewUser(UID string, opts ...UserOption) User {
 		log:  log.Default(),
 		poss: make(map[uint64]Position),
 		d:    time.Second * 5,
+		c:    http.DefaultClient,
+		ff:   true,
 	}
 
 	u.log.SetOutput(io.Discard)
@@ -53,5 +58,12 @@ func WithLogging() UserOption {
 func WithCustomRefresh(d time.Duration) UserOption {
 	return func(u *User) {
 		u.d = d
+	}
+}
+
+// WithHTTPClient sets user's HTTP Client.
+func WithHTTPClient(c *http.Client) UserOption {
+	return func(u *User) {
+		u.c = c
 	}
 }

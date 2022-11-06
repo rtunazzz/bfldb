@@ -22,7 +22,7 @@ type LdbAPIRes[T UserPositionData | UserBaseInfo] struct {
 }
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost[T UserPositionData | UserBaseInfo](path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
+func doPost[T UserPositionData | UserBaseInfo](c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -51,7 +51,7 @@ func doPost[T UserPositionData | UserBaseInfo](path string, data io.Reader) (ldb
 	req.Header.Add("sec-gpc", "1")
 	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.Do(req)
 	if err != nil {
 		err = fmt.Errorf("failed to do request: %w", err)
 		return
@@ -67,53 +67,53 @@ func doPost[T UserPositionData | UserBaseInfo](path string, data io.Reader) (ldb
 	return ldbres, json.Unmarshal(body, &ldbres)
 }
 
-// ***************************** /getOtherPosition *****************************
+// ************************************************** /getOtherPosition **************************************************
 
 // UserPositionData represents data about user's positions.
 type UserPositionData struct {
-	OtherPositionRetList []rawPosition `json:"otherPositionRetList"`
-	UpdateTimeStamp      int64         `json:"updateTimeStamp"`
-	UpdateTime           []int         `json:"updateTime"`
+	OtherPositionRetList []rawPosition `json:"otherPositionRetList"` // List of positions
+	UpdateTimeStamp      int64         `json:"updateTimeStamp"`      // Timestamp
+	UpdateTime           []int         `json:"updateTime"`           // Time array in the format of [YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, ... ]
 }
 
 // rawPosition represent details of an individual position returned.
 type rawPosition struct {
-	Symbol          string  `json:"symbol"`
-	EntryPrice      float64 `json:"entryPrice"`
-	MarkPrice       float64 `json:"markPrice"`
-	Pnl             float64 `json:"pnl"`
-	Roe             float64 `json:"roe"`
-	Amount          float64 `json:"amount"`
-	UpdateTimeStamp int64   `json:"updateTimeStamp"`
-	UpdateTime      []int   `json:"updateTime"`
-	Yellow          bool    `json:"yellow"`
-	TradeBefore     bool    `json:"tradeBefore"`
-	Leverage        int     `json:"leverage"`
+	Symbol          string  `json:"symbol"`          // Position symbol
+	EntryPrice      float64 `json:"entryPrice"`      // Entry price
+	MarkPrice       float64 `json:"markPrice"`       // Mark Price
+	Pnl             float64 `json:"pnl"`             // PNL
+	Roe             float64 `json:"roe"`             // ROE
+	Amount          float64 `json:"amount"`          // Position size
+	UpdateTimeStamp int64   `json:"updateTimeStamp"` // Timestamp
+	UpdateTime      []int   `json:"updateTime"`      // Time array in the format of [YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, ... ]
+	Yellow          bool    `json:"yellow"`          // ???
+	TradeBefore     bool    `json:"tradeBefore"`     // ???
+	Leverage        int     `json:"leverage"`        // leverage used
 }
 
 // GetOtherPosition gets all currently open positions for a user.
-func GetOtherPosition(uid string) (upr LdbAPIRes[UserPositionData], err error) {
-	return doPost[UserPositionData]("/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)))
+func (u *User) GetOtherPosition() (upr LdbAPIRes[UserPositionData], err error) {
+	return doPost[UserPositionData](u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }
 
-// ***************************** /getOtherLeaderboardBaseInfo *****************************
+// ************************************************** /getOtherLeaderboardBaseInfo **************************************************
 
 // UserBaseInfo represents user's data.
 type UserBaseInfo struct {
-	NickName               string      `json:"nickName"`
-	UserPhotoURL           string      `json:"userPhotoUrl"`
-	PositionShared         bool        `json:"positionShared"`
-	DeliveryPositionShared bool        `json:"deliveryPositionShared"`
-	FollowingCount         int         `json:"followingCount"`
-	FollowerCount          int         `json:"followerCount"`
-	TwitterURL             string      `json:"twitterUrl"`
-	Introduction           string      `json:"introduction"`
-	TwShared               bool        `json:"twShared"`
-	IsTwTrader             bool        `json:"isTwTrader"`
-	OpenID                 interface{} `json:"openId"`
+	NickName               string      `json:"nickName"`               // Nickname
+	UserPhotoURL           string      `json:"userPhotoUrl"`           // Photo URL
+	PositionShared         bool        `json:"positionShared"`         // true if user is sharing their positions, false otherwise
+	DeliveryPositionShared bool        `json:"deliveryPositionShared"` // ???
+	FollowingCount         int         `json:"followingCount"`         // How many people user follows
+	FollowerCount          int         `json:"followerCount"`          // How many people follow user
+	TwitterURL             string      `json:"twitterUrl"`             // Twitter URL
+	Introduction           string      `json:"introduction"`           // Introduction (profile description)
+	TwShared               bool        `json:"twShared"`               // ???
+	IsTwTrader             bool        `json:"isTwTrader"`             // ???
+	OpenID                 interface{} `json:"openId"`                 // ???
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
-func GetOtherLeaderboardBaseInfo(uid string) (upr LdbAPIRes[UserBaseInfo], err error) {
-	return doPost[UserBaseInfo]("/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", uid)))
+func (u *User) GetOtherLeaderboardBaseInfo() (upr LdbAPIRes[UserBaseInfo], err error) {
+	return doPost[UserBaseInfo](u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }

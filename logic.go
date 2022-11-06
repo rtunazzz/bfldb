@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// SubscribePositions subscribes to an user's potition details in a new goroutine.
+// SubscribePositions subscribes to user's potition details in a new goroutine.
 //
 // Returns two read-only channels, one with user's positions, other with any errors occured during the subsription.
 func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan error) {
@@ -27,7 +27,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 
 			case <-t.C:
 				u.log.Printf("[%s] Checking for new positions\n", u.UID)
-				res, err := getOpenPositions(u.UID)
+				res, err := u.GetOtherPosition()
 				if err != nil {
 					ce <- fmt.Errorf("failed to fetch positions: %w", err)
 					continue
@@ -90,14 +90,17 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		}
 
 		// something changed
-		cp <- p
+
+		// dont send the new position on first run (bc it's not really "new")
+		if !u.ff {
+			cp <- p
+		}
 
 		// update the old position to the current one
 		u.poss[h] = p
 	}
 
-	// TODO: rework this logic so we aren't looping twice when it's not needed
-	// (e.g. compare len of previous positions and current ones etc.)
+	// TODO: rework this logic so we aren't looping twice over the maps when it could be done in one loop
 	for h, p := range u.poss {
 		if _, ok := used[h]; ok {
 			continue
@@ -107,6 +110,16 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// thus it has been closed
 
 		p.Type = Closed
-		cp <- p
+
+		// dont send a new position on first run
+		if !u.ff {
+			cp <- p
+		}
 	}
+
+	// set first run to false because we just completed it
+	if u.ff {
+		u.ff = false
+	}
+
 }
