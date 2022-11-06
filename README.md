@@ -1,5 +1,5 @@
 # binance-ftl
-> Wrapper around Binance's Futures Leaderboard API, in Go.]
+> Wrapper around Binance's Futures Leaderboard API, in Go.
 
 [![GoDoc](https://godoc.org/github.com/rtunazzz/binance-ftl?status.svg)](https://godoc.org/github.com/rtunazzz/binance-ftl)
 
