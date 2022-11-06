@@ -3,6 +3,8 @@
 
 [![GoDoc](https://godoc.org/github.com/rtunazzz/binance-ftl?status.svg)](https://godoc.org/github.com/rtunazzz/binance-ftl)
 
+<p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
+
 *THIS IS STILL WORK IN PROGRESS*
 
 # Installation
@@ -16,6 +18,9 @@ go get -u github.com/rtunazzz/binance-ftl
 - [ ] Complete TODO's
 
 # Example
+
+## Subscribing to user's positions
+> **The user needs to have their position sharing enabled!** Otherwise you will not get any positions through the channel.
 
 ```golang
 package main
@@ -43,6 +48,27 @@ func main() {
 			break
 		}
 	}
+}
+```
+
+## Searching for user by his nickname
+
+```golang
+package main
+
+import (
+	"fmt"
+
+	"github.com/rtunazzz/binance-ftl"
+)
+
+func main() {
+	res, err := ftl.SearchNickname("TreeOfAlpha")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", res.Data)
 }
 ```
 
