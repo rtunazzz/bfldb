@@ -101,7 +101,8 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		u.poss[h] = p
 	}
 
-	// TODO: rework this logic so we aren't looping twice over the maps when it could be done in one loop
+	// check which positions were not present in the latest fetch
+
 	for h, p := range u.poss {
 		if _, ok := used[h]; ok {
 			u.log.Printf("%d is used\n", h)
