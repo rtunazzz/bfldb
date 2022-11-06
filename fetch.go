@@ -91,7 +91,7 @@ type rawPosition struct {
 	Leverage        int     `json:"leverage"`        // leverage used
 }
 
-// GetOtherPosition gets all currently open positions for a user.
+// GetOtherPosition gets all currently open positions for an user.
 func (u *User) GetOtherPosition() (LdbAPIRes[UserPositionData], error) {
 	return doPost[UserPositionData](u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }
