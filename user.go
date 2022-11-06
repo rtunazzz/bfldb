@@ -11,6 +11,7 @@ import (
 // User represents one Binance leaderboard User
 type User struct {
 	UID  string              // Encrypted User ID
+	id   string              // identified used in logging
 	log  *log.Logger         // Logger
 	poss map[uint64]Position // hashmap of positions user is currently in
 	d    time.Duration       // duration between requests updating current positions
@@ -23,6 +24,7 @@ type UserOption func(*User)
 // NewUser creates a new User with his encrypted UserID.
 func NewUser(UID string, opts ...UserOption) User {
 	u := User{
+		id:   UID,
 		UID:  UID,
 		log:  log.Default(),
 		poss: make(map[uint64]Position),
@@ -38,6 +40,13 @@ func NewUser(UID string, opts ...UserOption) User {
 	}
 
 	return u
+}
+
+// WithID sets user's logging id.
+func WithID(id string) UserOption {
+	return func(u *User) {
+		u.id = id
+	}
 }
 
 // WithCustomLogger writes all user logs using the logger provided.
