@@ -9,12 +9,7 @@ go get -u github.com/rtunazzz/binance-ftl
 ```
 
 ## TODO
-- [x] Add fetch method for `/getOtherLeaderboardBaseInfo` endpoint
-- [x] Add documentation & example usage
-- [x] Add proxy support
-- [x] Add fetch method for `/searchNickname` endpoint
-- [ ] Add tests
-- [ ] Publish v0.0.1 :tada:
+- [ ] Add test for `handlePositions`
 - [ ] Add CI
 - [ ] Complete TODO's
 
