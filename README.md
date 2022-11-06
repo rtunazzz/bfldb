@@ -5,17 +5,10 @@
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
 
-*THIS IS STILL WORK IN PROGRESS*
-
 # Installation
 ```bash
 go get -u github.com/rtunazzz/binance-ftl
 ```
-
-## TODO
-- [x] Add test for `handlePositions`
-- [ ] Add CI
-- [ ] Complete TODO's
 
 # Example
 
