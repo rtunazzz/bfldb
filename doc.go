@@ -1,3 +1,3 @@
 package ftl
 
-// ftl is a library for Binance's Futures Leaderboard API.
+// binance-ftl is an unofficial wrapper around Binance's Futures Leaderboard API.

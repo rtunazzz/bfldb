@@ -121,5 +121,4 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 	if u.ff {
 		u.ff = false
 	}
-
 }
