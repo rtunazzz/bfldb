@@ -9,10 +9,10 @@ import (
 
 // User represents one Binance leaderboard User
 type User struct {
-	UID  string // Encrypted User ID
-	log  *log.Logger
-	poss map[uint64]Position
-	d    time.Duration
+	UID  string              // Encrypted User ID
+	log  *log.Logger         // Logger
+	poss map[uint64]Position // hashmap of positions user is currently in
+	d    time.Duration       // duration between requests updating current positions
 }
 
 type UserOption func(*User)
@@ -49,6 +49,7 @@ func WithLogging() UserOption {
 	}
 }
 
+// WithCustomRefresh sets the duration between requests updating user's current positions.
 func WithCustomRefresh(d time.Duration) UserOption {
 	return func(u *User) {
 		u.d = d
