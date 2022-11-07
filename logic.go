@@ -34,7 +34,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 				}
 
 				if !res.Success {
-					ce <- fmt.Errorf("failed to fetch positions: %v", res.Message)
+					ce <- fmt.Errorf("failed to fetch positions, bad response message: %v", res.Message)
 					continue
 				}
 
@@ -112,11 +112,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// thus it has been closed
 
 		p.Type = Closed
-
-		// dont send a new position on first run
-		if !u.ff {
-			cp <- p
-		}
+		cp <- p
 
 		// remove the position from user's positions
 		delete(u.poss, h)
