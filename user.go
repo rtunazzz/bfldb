@@ -26,13 +26,14 @@ func NewUser(UID string, opts ...UserOption) User {
 	u := User{
 		id:   UID,
 		UID:  UID,
-		log:  log.Default(),
+		log:  logger,
 		poss: make(map[uint64]Position),
 		d:    time.Second * 5,
 		c:    http.DefaultClient,
 		ff:   true,
 	}
 
+	// disable logging by default
 	u.log.SetOutput(io.Discard)
 
 	for _, opt := range opts {
