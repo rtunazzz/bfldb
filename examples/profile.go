@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-bfldb"
+	"github.com/rtunazzz/bfldb"
 )
 
 func main() {
