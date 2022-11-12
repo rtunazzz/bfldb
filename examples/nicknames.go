@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-ftl"
+	"github.com/rtunazzz/binance-bfldb"
 )
 
 func main() {
-	res, err := ftl.SearchNickname(context.Background(), "TreeOfAlpha")
+	res, err := bfldb.SearchNickname(context.Background(), "TreeOfAlpha")
 	if err != nil {
 		panic(err)
 	}
