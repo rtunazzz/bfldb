@@ -1,5 +1,5 @@
 # bfldb [![GoDoc](https://godoc.org/github.com/rtunazzz/bfldb?status.svg)](https://godoc.org/github.com/rtunazzz/bfldb)
-> BFLDB is a wrapper around **B**inance's **F**utures **L**ea**d**er**b**oard API, in Go.
+> BFLDB is a wrapper around **B**inance's **F**utures **L**ea**d**er**b**oard API, in Golang.
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
 
