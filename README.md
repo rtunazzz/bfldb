@@ -3,15 +3,14 @@
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
 
+This library provides a wrapper around [Binance's futures leaderboard](https://www.binance.com/en/futures-activity/leaderboard) API. (*keep in mind this is not a publicly documented API*)
+
+You're able to subscribe to positions opened by leading futures traders (that are sharing their positions publicly via Binance) and query their leaderboard data.
+
 ## Installation
 ```bash
 go get -u github.com/rtunazzz/bfldb
 ```
-
-## Usecases
-This library provides a wrapper around [Binance's futures leaderboard](https://www.binance.com/en/futures-activity/leaderboard) API. (*keep in mind this is not a publicly documented API*)
-
-You're able to subscribe to positions opened by leading futures traders (that are sharing their positions publicly via Binance) and query their leaderboard data.
 
 ## Example usage
 
@@ -25,7 +24,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-bfldb"
+	"github.com/rtunazzz/bfldb"
 )
 
 func main() {
