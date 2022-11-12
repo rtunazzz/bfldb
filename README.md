@@ -1,19 +1,22 @@
-# bfldb
-> Wrapper around Binance's Futures Leaderboard API, in Go.
-
-[![GoDoc](https://godoc.org/github.com/rtunazzz/bfldb?status.svg)](https://godoc.org/github.com/rtunazzz/bfldb)
+# bfldb [![GoDoc](https://godoc.org/github.com/rtunazzz/bfldb?status.svg)](https://godoc.org/github.com/rtunazzz/bfldb)
+> BFLDB is a wrapper around **B**inance's **F**utures **L**ea**d**er**b**oard API, in Go.
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
 
-# Installation
+## Installation
 ```bash
 go get -u github.com/rtunazzz/bfldb
 ```
 
-# Example
+## Usecases
+This library provides a wrapper around [Binance's futures leaderboard](https://www.binance.com/en/futures-activity/leaderboard) API. (*keep in mind this is not a publicly documented API*)
 
-## Subscribing to user's positions
-> **The user needs to have their position sharing enabled!** Otherwise you will not get any positions through the channel.
+You're able to subscribe to positions opened by leading futures traders (that are sharing their positions publicly via Binance) and query their leaderboard data.
+
+## Example usage
+
+<details>
+<summary>Subscribe to a trader's positions</summary>
 
 ```golang
 package main
@@ -22,7 +25,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/bfldb"
+	"github.com/rtunazzz/binance-bfldb"
 )
 
 func main() {
@@ -43,51 +46,6 @@ func main() {
 	}
 }
 ```
+</details>
 
-## Searching for user by their nickname
-
-```golang
-package main
-
-import (
-	"context"
-	"fmt"
-
-	"github.com/rtunazzz/bfldb"
-)
-
-func main() {
-	res, err := bfldb.SearchNickname(context.Background(), "TreeOfAlpha")
-	if err != nil {
-		panic(err)
-	}
-
-	// res.Data is an array here so it can include more than one result
-	fmt.Printf("%+v\n", res.Data)
-}
-```
-
-## Getting profile details for an user
-
-```golang
-package main
-
-import (
-	"context"
-	"fmt"
-
-	"github.com/rtunazzz/bfldb"
-)
-
-func main() {
-	// You can find this UID (encryptedUid) in the end of a leaderboard profile URL. For example:
-	// https://www.binance.com/en/futures-activity/leaderboard/user?encryptedUid=47E6D002EBB1173967A6561F72B9395C
-	u := bfldb.NewUser("47E6D002EBB1173967A6561F72B9395C")
-	res, err := u.GetOtherLeaderboardBaseInfo(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("%+v\n", res.Data)
-}
-```
+For more examples, check out the [`examples/`](./examples) directory.
