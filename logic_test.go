@@ -95,8 +95,6 @@ func TestLogic(t *testing.T) {
 		u.handlePositions(tt.initPoss, cp, ce)
 		t.Log("init positions:", u.poss)
 
-		ops := make([]Position, 0)
-
 		go func() {
 			// handle positions
 			u.handlePositions(tt.rawPoss, cp, ce)
