@@ -1,4 +1,4 @@
-package ftl
+package bfldb
 
 import (
 	"github.com/mitchellh/hashstructure/v2"

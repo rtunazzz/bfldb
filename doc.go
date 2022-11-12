@@ -1,3 +1,3 @@
-package ftl
+package bfldb
 
-// binance-ftl is an unofficial wrapper around Binance's Futures Leaderboard API.
+// bfldb is an unofficial wrapper around Binance's Futures Leaderboard API.

@@ -1,4 +1,4 @@
-module github.com/rtunazzz/binance-ftl
+module github.com/rtunazzz/bfldb
 
 go 1.19
 

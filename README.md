@@ -1,13 +1,13 @@
-# binance-ftl
+# bfldb
 > Wrapper around Binance's Futures Leaderboard API, in Go.
 
-[![GoDoc](https://godoc.org/github.com/rtunazzz/binance-ftl?status.svg)](https://godoc.org/github.com/rtunazzz/binance-ftl)
+[![GoDoc](https://godoc.org/github.com/rtunazzz/bfldb?status.svg)](https://godoc.org/github.com/rtunazzz/bfldb)
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/38296319/200170420-0644f467-49ff-4ecd-8811-1bc939f84fea.png"></p>
 
 # Installation
 ```bash
-go get -u github.com/rtunazzz/binance-ftl
+go get -u github.com/rtunazzz/bfldb
 ```
 
 # Example
@@ -22,7 +22,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-ftl"
+	"github.com/rtunazzz/bfldb"
 )
 
 func main() {
@@ -53,7 +53,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-ftl"
+	"github.com/rtunazzz/bfldb"
 )
 
 func main() {
@@ -76,7 +76,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rtunazzz/binance-ftl"
+	"github.com/rtunazzz/bfldb"
 )
 
 func main() {
