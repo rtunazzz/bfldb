@@ -66,7 +66,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// mark as used
 		used[h] = struct{}{}
 
-		pp, ok := u.poss[h]
+		pp, ok := u.pHashes[h]
 		if !ok {
 			// no previous position, so it's a new one
 			p.Type = Opened
@@ -93,17 +93,17 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// something changed
 
 		// dont send the new position on first run (bc it's not really "new")
-		if !u.ff {
+		if !u.isFirst {
 			cp <- p
 		}
 
 		// update the old position to the current one
-		u.poss[h] = p
+		u.pHashes[h] = p
 	}
 
 	// check which positions were not present in the latest fetch
 
-	for h, p := range u.poss {
+	for h, p := range u.pHashes {
 		if _, ok := used[h]; ok {
 			continue
 		}
@@ -115,11 +115,11 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		cp <- p
 
 		// remove the position from user's positions
-		delete(u.poss, h)
+		delete(u.pHashes, h)
 	}
 
 	// set first run to false because we just completed it
-	if u.ff {
-		u.ff = false
+	if u.isFirst {
+		u.isFirst = false
 	}
 }

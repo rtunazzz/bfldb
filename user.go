@@ -10,13 +10,13 @@ import (
 
 // User represents one Binance leaderboard User
 type User struct {
-	UID  string              // Encrypted User ID
-	id   string              // identified used in logging
-	log  *log.Logger         // Logger
-	poss map[uint64]Position // hashmap of positions user is currently in
-	d    time.Duration       // duration between requests updating current positions
-	c    *http.Client        // http client
-	ff   bool                // indicating first fetch
+	UID     string              // Encrypted User ID
+	id      string              // identified used in logging
+	log     *log.Logger         // Logger
+	pHashes map[uint64]Position // hashmap of positions user is currently in
+	d       time.Duration       // duration between requests updating current positions
+	c       *http.Client        // http client
+	isFirst bool                // indicating first fetch
 }
 
 type UserOption func(*User)
@@ -24,13 +24,13 @@ type UserOption func(*User)
 // NewUser creates a new User with his encrypted UserID.
 func NewUser(UID string, opts ...UserOption) User {
 	u := User{
-		id:   UID,
-		UID:  UID,
-		log:  logger,
-		poss: make(map[uint64]Position),
-		d:    time.Second * 5,
-		c:    http.DefaultClient,
-		ff:   true,
+		id:      UID,
+		UID:     UID,
+		log:     logger,
+		pHashes: make(map[uint64]Position),
+		d:       time.Second * 5,
+		c:       http.DefaultClient,
+		isFirst: true,
 	}
 
 	// disable logging by default
