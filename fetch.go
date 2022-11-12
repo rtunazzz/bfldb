@@ -1,6 +1,7 @@
 package ftl
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,11 +23,12 @@ type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
 }
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
+func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](ctx context.Context, c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		apiBase+path,
 		data,
@@ -92,8 +94,8 @@ type rawPosition struct {
 }
 
 // GetOtherPosition gets all currently open positions for an user.
-func (u *User) GetOtherPosition() (LdbAPIRes[UserPositionData], error) {
-	return doPost[UserPositionData](u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
+func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
+	return doPost[UserPositionData](ctx, u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -114,8 +116,8 @@ type UserBaseInfo struct {
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
-func (u *User) GetOtherLeaderboardBaseInfo() (LdbAPIRes[UserBaseInfo], error) {
-	return doPost[UserBaseInfo](u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
+func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
+	return doPost[UserBaseInfo](ctx, u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -128,6 +130,6 @@ type NicknameDetails struct {
 }
 
 // SearchNickname searches for a nickname.
-func SearchNickname(nickname string) (LdbAPIRes[[]NicknameDetails], error) {
-	return doPost[[]NicknameDetails](http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)))
+func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
+	return doPost[[]NicknameDetails](ctx, http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)))
 }

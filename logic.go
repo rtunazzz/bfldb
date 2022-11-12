@@ -27,7 +27,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 
 			case <-t.C:
 				u.log.Printf("[%s] Checking for new positions\n", u.id)
-				res, err := u.GetOtherPosition()
+				res, err := u.GetOtherPosition(ctx)
 				if err != nil {
 					ce <- fmt.Errorf("failed to fetch positions: %w", err)
 					continue
