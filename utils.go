@@ -7,8 +7,8 @@ import (
 )
 
 type aggregatedNickname struct {
-	Nickname string
-	UIDs     []string
+	Nickname string   // Nickmane this struct belongs to
+	UIDs     []string // User IDs associated with the nickname
 }
 
 // NicknamesToUIDs gets a list of UIDs for the nicknames provided.
