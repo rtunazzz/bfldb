@@ -28,7 +28,7 @@ func TestLogic(t *testing.T) {
 		UpdateTimeStamp: 1667674507457,
 		Leverage:        2,
 	}
-	p1 := parsePosition(rp1)
+	p1 := newPosition(rp1)
 	p1.Type = Opened
 
 	p1C := p1
@@ -45,7 +45,7 @@ func TestLogic(t *testing.T) {
 		Leverage:        2,
 	}
 
-	p1Added := parsePosition(rp1Added)
+	p1Added := newPosition(rp1Added)
 	p1Added.Type = AddedTo
 
 	tests := []struct {

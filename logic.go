@@ -54,7 +54,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 	used := make(map[uint64]struct{}, len(rps))
 
 	for _, rp := range rps {
-		p := parsePosition(rp)
+		p := newPosition(rp)
 
 		// check if there are any old positions or if it's a new one
 		h, err := p.hash()
@@ -74,8 +74,8 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 			continue
 		}
 
-		// it's ok on !ok because pp will just be a Position{}
-		p.setType(pp)
+		// it's ok on !ok because pp will just be a Position{} so .Amount will be 0
+		p.setType(pp.Amount)
 
 		u.log.Printf("[%s] Position change: %d %s %f %s @ %f\n", u.id, p.Type, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
 
