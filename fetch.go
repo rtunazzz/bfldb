@@ -66,7 +66,12 @@ func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](ctx context.C
 		return
 	}
 
-	return ldbres, json.Unmarshal(body, &ldbres)
+	err = json.Unmarshal(body, &ldbres)
+	if err != nil {
+		err = fmt.Errorf("failed to decode request body into JSON. Status %d, Body:\n%s", res.StatusCode, string(body))
+	}
+
+	return ldbres, err
 }
 
 // ************************************************** /getOtherPosition **************************************************
