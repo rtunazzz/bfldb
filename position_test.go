@@ -10,7 +10,7 @@ import (
 func TestGetPosDir(t *testing.T) {
 	tests := []struct {
 		rp  rawPosition
-		exp PositionDirection
+		exp TradeDirection
 		msg string
 	}{
 		{
@@ -138,17 +138,65 @@ func TestSetType(t *testing.T) {
 			np:   Position{Amount: 1.5},
 			et:   AddedTo,
 		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.np.setType(tt.pp.Amount)
+			require.Equal(t, tt.et, tt.np.Type, "type missmatch")
+		})
+	}
+}
+
+func TestToOrder(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		p       Position
+		want    Order
+		wantErr bool
+	}{
 		{
-			name: "same position",
-			pp:   Position{Amount: 1, Type: Opened},
-			np:   Position{Amount: 1},
-			et:   Opened,
+			name:    "position with no previous amount",
+			p:       Position{prevAmount: _noPreviousAmount, Amount: 1},
+			wantErr: true,
+		},
+		{
+			name:    "opened position",
+			p:       Position{Direction: Long, Amount: 1, prevAmount: 0, Type: Opened},
+			want:    Order{Direction: Long, Amount: 1, ReduceOnly: false},
+			wantErr: false,
+		},
+		{
+			name:    "closed position",
+			p:       Position{Direction: Long, Amount: 0, prevAmount: 1, Type: Closed},
+			want:    Order{Direction: Short, Amount: 1, ReduceOnly: true},
+			wantErr: false,
+		},
+		{
+			name:    "added to  position",
+			p:       Position{Direction: Long, Amount: 1, prevAmount: 0.5, Type: AddedTo},
+			want:    Order{Direction: Long, Amount: 0.5, ReduceOnly: false},
+			wantErr: false,
+		},
+		{
+			name:    "partially closed position",
+			p:       Position{Direction: Long, Amount: 0.1, prevAmount: 1, Type: PartiallyClosed},
+			want:    Order{Direction: Short, Amount: 0.9, ReduceOnly: true},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.np.setType(tt.pp)
-			require.Equal(t, tt.et, tt.np.Type, "type missmatch")
+			got, err := tt.p.ToOrder()
+
+			if tt.wantErr {
+				require.NotNilf(t, err, "Position.ToOrder() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				require.Nilf(t, err, "Position.ToOrder() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			require.Equalf(t, tt.want, got, "Position.ToOrder() = %v, want %v", got, tt.want)
 		})
 	}
 }
