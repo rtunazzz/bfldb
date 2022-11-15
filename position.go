@@ -18,6 +18,9 @@ const (
 	Closed                                  // A completely closed position
 	AddedTo                                 // A new position where there previously already was a position for the same direction and ticker + the amount increased
 	PartiallyClosed                         // A new position where there previously already was a position for the same direction and ticker + the amount decreased
+
+	// Representing a default previousAmount value for Position
+	_noPreviousAmount = -1
 )
 
 // Position represents a position user is in.
@@ -38,7 +41,7 @@ type Position struct {
 //
 // returns ErrNoPreviousPosition when there was no previous amount set on Position
 func (p Position) ToOrder() (Order, error) {
-	if p.prevAmount == 0 {
+	if p.prevAmount == _noPreviousAmount {
 		return Order{}, ErrNoPreviousPosition
 	}
 
@@ -57,15 +60,21 @@ func (p Position) ToOrder() (Order, error) {
 
 	if p.Type == Closed || p.Type == PartiallyClosed {
 		o.ReduceOnly = true
-	}
 
-	if p.Type == PartiallyClosed {
+		// inverse the direction since the new order should be closing the
+		// position
 		if p.Direction == Long {
 			o.Direction = Short
 		} else {
 			o.Direction = Long
 		}
+	}
 
+	if p.Type == Closed && p.Amount == 0 {
+		o.Amount = p.prevAmount
+	}
+
+	if p.Type == PartiallyClosed {
 		o.Amount = p.prevAmount - p.Amount
 	}
 
@@ -111,6 +120,7 @@ func newPosition(rp rawPosition) Position {
 		Ticker:     rp.Symbol,
 		EntryPrice: rp.EntryPrice,
 		Amount:     rp.Amount,
+		prevAmount: _noPreviousAmount,
 	}
 }
 
