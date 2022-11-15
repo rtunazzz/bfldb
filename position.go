@@ -31,15 +31,48 @@ const (
 
 // Position represents a trade position.
 type Position struct {
-	// TODO: Verify that there can only be one position with the same ticker on Binance's leaderboard
-	// so it's impossible to have for example one BTCUSDT LONG at 20k and ANOTHER at 30k
-	// if that IS possible, adjust the hashing adequately
+	// TODO: Verify that there can only be one position with the same ticker on Binance's
+	// leaderboard so it's impossible to have for example one BTCUSDT LONG at 20k and ANOTHER
+	// at 30k - if that IS possible, adjust the hashing adequately
 
 	Type       PositionType      `hash:"ignore"` // Type of the position
 	Direction  PositionDirection // Direction of the position (e.g. LONG / SHORT)
 	Ticker     string            // Ticker of the position (e.g. BTCUSDT)
 	EntryPrice float64           `hash:"ignore"` // Entry price
 	Amount     float64           `hash:"ignore"` // Amount
+}
+
+// hash hashes a position into an uint64
+func (p Position) hash() (uint64, error) {
+	return hashstructure.Hash(p, hashstructure.FormatV2, nil)
+}
+
+// setType sets the type of the position in accordance with the previous position.
+//
+// This is because Binance API only returns the CURRENT position details so
+// we need to keep track of the previous position manually and detect changes
+// that way.
+func (p *Position) setType(pp Position) {
+	if pp == (Position{}) {
+		// no previous position, so it's a new one
+		p.Type = Opened
+	} else if pp.Amount > p.Amount {
+		// previously saved amount is BIGGER than the current amount
+		// meaning the amount has DECREASED thus the position
+		// has been partially closed
+		p.Type = PartiallyClosed
+	} else if pp.Amount < p.Amount {
+		// previously saved amount is SMALLER than the current amount
+		// meaning the amount has INCREASED thus the position
+		// has been added to
+		p.Type = AddedTo
+	} else {
+		// otherwise pp.Amount == p.Amount so no position change, type is the same as on previous position
+		//
+		// this should never happen because a new position won't come in if it has the same Amount
+		//as the previous one.
+		p.Type = pp.Type
+	}
 }
 
 // parsePosition parseas a raw position into a position
@@ -50,11 +83,6 @@ func parsePosition(rp rawPosition) Position {
 		EntryPrice: rp.EntryPrice,
 		Amount:     rp.Amount,
 	}
-}
-
-// hash hashes a position into an uint64
-func (p Position) hash() (uint64, error) {
-	return hashstructure.Hash(p, hashstructure.FormatV2, nil)
 }
 
 // getPosDir determines the position direction.

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPosDir(t *testing.T) {
@@ -105,5 +106,49 @@ func TestHashInequality(t *testing.T) {
 		assert.Nil(t, err, "hashing errored out")
 
 		assert.NotEqual(t, h1, h2, tc.msg)
+	}
+}
+
+func TestSetType(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+	}
+	tests := []struct {
+		name string
+		np   Position     // new position
+		pp   Position     // previous position
+		et   PositionType // expected type
+	}{
+		{
+			name: "new opened position",
+			pp:   Position{},
+			np:   Position{Amount: 0.5},
+			et:   Opened,
+		},
+		{
+			name: "partially closed position",
+			pp:   Position{Amount: 1},
+			np:   Position{Amount: 0.5},
+			et:   PartiallyClosed,
+		},
+		{
+			name: "added to position",
+			pp:   Position{Amount: 1},
+			np:   Position{Amount: 1.5},
+			et:   AddedTo,
+		},
+		{
+			name: "same position",
+			pp:   Position{Amount: 1, Type: Opened},
+			np:   Position{Amount: 1},
+			et:   Opened,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.np.setType(tt.pp)
+			require.Equal(t, tt.et, tt.np.Type, "type missmatch")
+		})
 	}
 }

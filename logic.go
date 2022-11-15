@@ -67,30 +67,17 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		used[h] = struct{}{}
 
 		pp, ok := u.pHashes[h]
-		if !ok {
-			// no previous position, so it's a new one
-			p.Type = Opened
-			u.log.Printf("[%s] New opened position: %s %f %s @ %f\n", u.id, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
-		} else if pp.Amount > p.Amount {
-			// previously saved amount is BIGGER than the current amount
-			// meaning the amount has DECREASED thus the position
-			// has been partially closed
 
-			u.log.Printf("[%s] Position partially closed: %s %f -> %f %s @ %f\n", u.id, p.Direction, pp.Amount, p.Amount, p.Ticker, p.EntryPrice)
-			p.Type = PartiallyClosed
-		} else if pp.Amount < p.Amount {
-			// previously saved amount is SMALLER than the current amount
-			// meaning the amount has INCREASED thus the position
-			// has been added to
-
-			u.log.Printf("[%s] Position added to: %s %f -> %f %s @ %f\n", u.id, p.Direction, pp.Amount, p.Amount, p.Ticker, p.EntryPrice)
-			p.Type = AddedTo
-		} else {
-			// nothing changed
+		// if there's a record of the same position,
+		// and the amount is the same, then nothing changed so skip
+		if ok && pp.Amount == p.Amount {
 			continue
 		}
 
-		// something changed
+		// it's ok on !ok because pp will just be a Position{}
+		p.setType(pp)
+
+		u.log.Printf("[%s] Position change: %d %s %f %s @ %f\n", u.id, p.Type, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
 
 		// dont send the new position on first run (bc it's not really "new")
 		if !u.isFirst {
