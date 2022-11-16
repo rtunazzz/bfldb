@@ -32,7 +32,8 @@ func TestLogic(t *testing.T) {
 	p1.Type = Opened
 
 	p1C := p1
-	p1C.Type = Closed
+	p1C.Amount = 0
+	p1C.setType(p1.Amount)
 
 	rp1Added := rawPosition{
 		Symbol:          "SUSHIUSDT",
@@ -46,7 +47,7 @@ func TestLogic(t *testing.T) {
 	}
 
 	p1Added := newPosition(rp1Added)
-	p1Added.Type = AddedTo
+	p1Added.setType(p1.Amount)
 
 	tests := []struct {
 		initPoss []rawPosition
