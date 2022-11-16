@@ -84,7 +84,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 			cp <- p
 		}
 
-		// update the old position to the current one
+		// add/update the old position to the current one
 		u.pHashes[h] = p
 	}
 
@@ -98,7 +98,11 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// position hasn't been updated (is not present in the leaderboard anymore)
 		// thus it has been closed
 
-		p.Type = Closed
+		pa := p.Amount
+		// position closed = amount set to 0
+		p.Amount = 0
+		p.setType(pa) // will set to Closed
+
 		cp <- p
 
 		// remove the position from user's positions
