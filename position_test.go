@@ -112,8 +112,6 @@ func TestHashInequality(t *testing.T) {
 func TestSetType(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-	}
 	tests := []struct {
 		name string
 		np   Position     // new position
@@ -174,7 +172,7 @@ func TestToOrder(t *testing.T) {
 			want: Order{Direction: Short, Amount: 1, ReduceOnly: true},
 		},
 		{
-			name: "added to  position",
+			name: "added to position",
 			p:    Position{Direction: Long, Amount: 1, prevAmount: 0.5, Type: AddedTo},
 			want: Order{Direction: Long, Amount: 0.5, ReduceOnly: false},
 		},
