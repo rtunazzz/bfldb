@@ -26,12 +26,14 @@ type Position struct {
 	// leaderboard so it's impossible to have for example one BTCUSDT LONG at 20k and ANOTHER
 	// at 30k - if that IS possible, adjust the hashing adequately
 
+	prevAmount float64 `hash:"ignore"` // previous amount, used for converting into an order
+
 	Type       PositionType   `hash:"ignore"` // Type of the position
 	Direction  TradeDirection // Direction (e.g. LONG / SHORT)
 	Ticker     string         // Ticker of the position (e.g. BTCUSDT)
 	EntryPrice float64        `hash:"ignore"` // Entry price
 	Amount     float64        `hash:"ignore"` // Amount
-	prevAmount float64        `hash:"ignore"` // previous amount, used for converting into an order
+	Leverage   int            `hash:"ignore"` // Position leverage
 }
 
 // ToOrder converts a position into an Order.
@@ -47,6 +49,7 @@ func (p Position) ToOrder() Order {
 		ReduceOnly: false,
 		Direction:  p.Direction,
 		Amount:     p.Amount,
+		Leverage:   p.Leverage,
 	}
 
 	if p.Type == Closed || p.Type == PartiallyClosed {
@@ -115,6 +118,7 @@ func newPosition(rp rawPosition) Position {
 		Ticker:     rp.Symbol,
 		EntryPrice: rp.EntryPrice,
 		Amount:     rp.Amount,
+		Leverage:   rp.Leverage,
 	}
 }
 

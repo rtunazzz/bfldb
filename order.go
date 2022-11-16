@@ -21,4 +21,5 @@ type Order struct {
 	Ticker     string         // Ticker of the position (e.g. BTCUSDT)
 	Amount     float64        // Amount
 	ReduceOnly bool           // Whether or not the order is reduce only
+	Leverage   int            // Leverage
 }
