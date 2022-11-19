@@ -7,40 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetPosDir(t *testing.T) {
-	tests := []struct {
-		rp  rawPosition
-		exp TradeDirection
-		msg string
-	}{
-		{
-			rp:  rawPosition{EntryPrice: 1000, MarkPrice: 2000, Pnl: 1000},
-			exp: Long,
-			msg: "should be long with positive PNL",
-		},
-		{
-			rp:  rawPosition{EntryPrice: 1000, MarkPrice: 500, Pnl: -500},
-			exp: Long,
-			msg: "should be long with negative PNL",
-		},
-		{
-			rp:  rawPosition{EntryPrice: 1000, MarkPrice: 500, Pnl: 500},
-			exp: Short,
-			msg: "should be short with positive PNL",
-		},
-		{
-			rp:  rawPosition{EntryPrice: 1000, MarkPrice: 1500, Pnl: -500},
-			exp: Short,
-			msg: "should be short with negative PNL",
-		},
-	}
-
-	for _, tc := range tests {
-		dir := getPosDir(tc.rp)
-		assert.Equal(t, tc.exp, dir, tc.msg)
-	}
-}
-
 func TestHashEquality(t *testing.T) {
 	tests := []struct {
 		p1  Position

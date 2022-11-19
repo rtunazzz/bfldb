@@ -2,6 +2,7 @@ package bfldb
 
 import (
 	"errors"
+	"math"
 
 	"github.com/mitchellh/hashstructure/v2"
 )
@@ -130,8 +131,16 @@ func (p *Position) setType(pa float64) {
 
 // newPosition creates a new Position from a rawPosition
 func newPosition(rp rawPosition) Position {
+	// Amount is negative on short positions
+
+	dir := Long
+	if rp.Amount < 0 {
+		dir = Short
+		rp.Amount = math.Abs(rp.Amount)
+	}
+
 	return Position{
-		Direction:  getPosDir(rp),
+		Direction:  dir,
 		Ticker:     rp.Symbol,
 		EntryPrice: rp.EntryPrice,
 		Amount:     rp.Amount,
@@ -139,21 +148,4 @@ func newPosition(rp rawPosition) Position {
 		Pnl:        rp.Pnl,
 		Roe:        rp.Roe,
 	}
-}
-
-// getPosDir determines the position direction.
-func getPosDir(rp rawPosition) TradeDirection {
-	pd := Short
-
-	// Long is either when:
-	// - Entry is below mark price and PNL is positive
-	// - Entry is above mark price and PNL is negative
-
-	if rp.EntryPrice < rp.MarkPrice && rp.Pnl > 0 {
-		pd = Long
-	} else if rp.EntryPrice > rp.MarkPrice && rp.Pnl < 0 {
-		pd = Long
-	}
-
-	return pd
 }
