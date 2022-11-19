@@ -20,6 +20,21 @@ const (
 	PartiallyClosed                         // A new position where there previously already was a position for the same direction and ticker + the amount decreased
 )
 
+func (pt PositionType) String() string {
+	switch pt {
+	default:
+		return ""
+	case Opened:
+		return "opened"
+	case Closed:
+		return "closed"
+	case AddedTo:
+		return "added to"
+	case PartiallyClosed:
+		return "partially closed"
+	}
+}
+
 // Position represents a position user is in.
 type Position struct {
 	// TODO: Verify that there can only be one position with the same ticker on Binance's
@@ -34,6 +49,8 @@ type Position struct {
 	EntryPrice float64        `hash:"ignore"` // Entry price
 	Amount     float64        `hash:"ignore"` // Amount
 	Leverage   int            `hash:"ignore"` // Position leverage
+	Pnl        float64        `hash:"ignore"` // PNL
+	Roe        float64        `hash:"ignore"` // ROE
 }
 
 // ToOrder converts a position into an Order.
@@ -119,6 +136,8 @@ func newPosition(rp rawPosition) Position {
 		EntryPrice: rp.EntryPrice,
 		Amount:     rp.Amount,
 		Leverage:   rp.Leverage,
+		Pnl:        rp.Pnl,
+		Roe:        rp.Roe,
 	}
 }
 
