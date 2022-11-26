@@ -23,7 +23,7 @@ type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
 }
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](ctx context.Context, c *http.Client, path string, data io.Reader) (ldbres LdbAPIRes[T], err error) {
+func doPost(ctx context.Context, c *http.Client, path string, data io.Reader, resPtr any) (err error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -66,12 +66,12 @@ func doPost[T UserPositionData | UserBaseInfo | []NicknameDetails](ctx context.C
 		return
 	}
 
-	err = json.Unmarshal(body, &ldbres)
+	err = json.Unmarshal(body, resPtr)
 	if err != nil {
 		err = fmt.Errorf("failed to decode request body into JSON. Status %d, Body:\n%s", res.StatusCode, string(body))
 	}
 
-	return ldbres, err
+	return err
 }
 
 // ************************************************** /getOtherPosition **************************************************
@@ -100,7 +100,14 @@ type rawPosition struct {
 
 // GetOtherPosition gets all currently open positions for an user.
 func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
-	return doPost[UserPositionData](ctx, u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
+	var res LdbAPIRes[UserPositionData]
+	return res, doPost(ctx, u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+}
+
+// GetOtherPosition gets all currently open positions for an user.
+func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionData], error) {
+	var res LdbAPIRes[UserPositionData]
+	return res, doPost(ctx, http.DefaultClient, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -122,7 +129,14 @@ type UserBaseInfo struct {
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
-	return doPost[UserBaseInfo](ctx, u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)))
+	var res LdbAPIRes[UserBaseInfo]
+	return res, doPost(ctx, u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+}
+
+// GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
+func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
+	var res LdbAPIRes[UserBaseInfo]
+	return res, doPost(ctx, http.DefaultClient, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -136,5 +150,6 @@ type NicknameDetails struct {
 
 // SearchNickname searches for a nickname.
 func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
-	return doPost[[]NicknameDetails](ctx, http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)))
+	var res LdbAPIRes[[]NicknameDetails]
+	return res, doPost(ctx, http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
 }
