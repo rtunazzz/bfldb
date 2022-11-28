@@ -77,7 +77,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// it's ok on !ok because pp will just be a Position{} so .Amount will be 0
 		p.setType(pp.Amount)
 
-		u.log.Printf("[%s] Position change: %d %s %f %s @ %f\n", u.id, p.Type, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
+		u.log.Printf("[%s] {send: %t} Position change: %d %s %f %s @ %f\n", u.id, !u.isFirst, p.Type, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
 
 		// dont send the new position on first run (bc it's not really "new")
 		if !u.isFirst {
