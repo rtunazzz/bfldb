@@ -114,7 +114,7 @@ func TestSetType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.np.setType(tt.pp.Amount)
 			require.Equal(t, tt.et, tt.np.Type, "type missmatch")
-			require.Equal(t, tt.pp.Amount, tt.np.prevAmount, "previous amount missmatch")
+			require.Equal(t, tt.pp.Amount, tt.np.PrevAmount, "previous amount missmatch")
 		})
 	}
 }
@@ -129,22 +129,22 @@ func TestToOrder(t *testing.T) {
 	}{
 		{
 			name: "opened position",
-			p:    Position{Direction: Long, Amount: 1, prevAmount: 0, Type: Opened},
+			p:    Position{Direction: Long, Amount: 1, PrevAmount: 0, Type: Opened},
 			want: Order{Direction: Long, Amount: 1, ReduceOnly: false},
 		},
 		{
 			name: "closed position",
-			p:    Position{Direction: Long, Amount: 0, prevAmount: 1, Type: Closed},
+			p:    Position{Direction: Long, Amount: 0, PrevAmount: 1, Type: Closed},
 			want: Order{Direction: Short, Amount: 1, ReduceOnly: true},
 		},
 		{
 			name: "added to position",
-			p:    Position{Direction: Long, Amount: 1, prevAmount: 0.5, Type: AddedTo},
+			p:    Position{Direction: Long, Amount: 1, PrevAmount: 0.5, Type: AddedTo},
 			want: Order{Direction: Long, Amount: 0.5, ReduceOnly: false},
 		},
 		{
 			name: "partially closed position",
-			p:    Position{Direction: Long, Amount: 0.1, prevAmount: 1, Type: PartiallyClosed},
+			p:    Position{Direction: Long, Amount: 0.1, PrevAmount: 1, Type: PartiallyClosed},
 			want: Order{Direction: Short, Amount: 0.9, ReduceOnly: true},
 		},
 	}

@@ -38,11 +38,7 @@ func (pt PositionType) String() string {
 
 // Position represents a position user is in.
 type Position struct {
-	// TODO: Verify that there can only be one position with the same ticker on Binance's
-	// leaderboard so it's impossible to have for example one BTCUSDT LONG at 20k and ANOTHER
-	// at 30k - if that IS possible, adjust the hashing adequately
-
-	prevAmount float64 `hash:"ignore"` // previous amount, used for converting into an order
+	PrevAmount float64 `hash:"ignore"` // previous amount, used for converting into an order
 
 	Type       PositionType   `hash:"ignore"` // Type of the position
 	Direction  TradeDirection // Direction (e.g. LONG / SHORT)
@@ -58,7 +54,7 @@ type Position struct {
 func (p Position) ToOrder() Order {
 	// == 0 means no position type
 	if p.Type == 0 {
-		p.setType(p.prevAmount)
+		p.setType(p.PrevAmount)
 	}
 
 	o := Order{
@@ -83,15 +79,15 @@ func (p Position) ToOrder() Order {
 	}
 
 	if p.Type == Closed && p.Amount == 0 {
-		o.Amount = p.prevAmount
+		o.Amount = p.PrevAmount
 	}
 
 	if p.Type == PartiallyClosed {
-		o.Amount = p.prevAmount - p.Amount
+		o.Amount = p.PrevAmount - p.Amount
 	}
 
 	if p.Type == AddedTo {
-		o.Amount = p.Amount - p.prevAmount
+		o.Amount = p.Amount - p.PrevAmount
 	}
 
 	return o
@@ -107,7 +103,7 @@ func (p Position) hash() (uint64, error) {
 // This is because Binance API only returns the CURRENT position details so
 // we need to keep track of the previous position manually and detect changes that way.
 func (p *Position) setType(pa float64) {
-	p.prevAmount = pa
+	p.PrevAmount = pa
 
 	if pa == 0 {
 		// no previous position, so it's a new one
