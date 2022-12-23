@@ -44,6 +44,7 @@ type Position struct {
 	Direction  TradeDirection // Direction (e.g. LONG / SHORT)
 	Ticker     string         // Ticker of the position (e.g. BTCUSDT)
 	EntryPrice float64        `hash:"ignore"` // Entry price
+	MarkPrice  float64        `hash:"ignore"` // Entry price
 	Amount     float64        `hash:"ignore"` // Amount
 	Leverage   int            `hash:"ignore"` // Position leverage
 	Pnl        float64        `hash:"ignore"` // PNL
@@ -139,6 +140,7 @@ func newPosition(rp rawPosition) Position {
 		Direction:  dir,
 		Ticker:     rp.Symbol,
 		EntryPrice: rp.EntryPrice,
+		MarkPrice:  rp.MarkPrice,
 		Amount:     rp.Amount,
 		Leverage:   rp.Leverage,
 		Pnl:        rp.Pnl,
