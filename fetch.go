@@ -22,58 +22,6 @@ type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
 	MessageDetail interface{} `json:"messageDetail"` // ???
 }
 
-// doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost(ctx context.Context, c *http.Client, path string, data io.Reader, resPtr any) (err error) {
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		"POST",
-		apiBase+path,
-		data,
-	)
-	if err != nil {
-		err = fmt.Errorf("failed to create request: %w", err)
-		return
-	}
-
-	req.Header.Add("authority", "www.binance.com")
-	req.Header.Add("accept", "*/*")
-	req.Header.Add("accept-language", "en-US,en;q=0.8")
-	req.Header.Add("cache-control", "no-cache")
-	req.Header.Add("clienttype", "web")
-	req.Header.Add("content-type", "application/json")
-	req.Header.Add("lang", "en")
-	req.Header.Add("origin", "https://www.binance.com")
-	req.Header.Add("pragma", "no-cache")
-	req.Header.Add("sec-fetch-dest", "empty")
-	req.Header.Add("sec-fetch-mode", "cors")
-	req.Header.Add("sec-fetch-site", "same-origin")
-	req.Header.Add("sec-gpc", "1")
-	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
-
-	res, err := c.Do(req)
-	if err != nil {
-		err = fmt.Errorf("failed to do request: %w", err)
-		return
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		err = fmt.Errorf("failed to read request body: %w", err)
-		return
-	}
-
-	err = json.Unmarshal(body, resPtr)
-	if err != nil {
-		err = fmt.Errorf("failed to decode request body into JSON. Status %d, Body:\n%s", res.StatusCode, string(body))
-	}
-
-	return err
-}
-
 // ************************************************** /getOtherPosition **************************************************
 
 // UserPositionData represents data about user's positions.
@@ -99,15 +47,14 @@ type rawPosition struct {
 }
 
 // GetOtherPosition gets all currently open positions for an user.
-func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
-	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, u.c, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
-}
-
-// GetOtherPosition gets all currently open positions for an user.
 func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
 	return res, doPost(ctx, http.DefaultClient, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+}
+
+// GetOtherPosition gets all currently open positions for an user.
+func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
+	return GetOtherPosition(ctx, u.UID)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -127,16 +74,15 @@ type UserBaseInfo struct {
 	OpenID                 interface{} `json:"openId"`                 // ???
 }
 
-// GetOtherLeaderboardBaseInfo gets information about an user.
-func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
-	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.c, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
-}
-
 // GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
 func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
 	return res, doPost(ctx, http.DefaultClient, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+}
+
+// GetOtherLeaderboardBaseInfo gets information about an user.
+func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
+	return GetOtherLeaderboardBaseInfo(ctx, u.UID)
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -152,4 +98,59 @@ type NicknameDetails struct {
 func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
 	var res LdbAPIRes[[]NicknameDetails]
 	return res, doPost(ctx, http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
+}
+
+// ************************************************** Unexported **************************************************
+
+// doPost POSTs the data passed in to the path on Binance's leaderboard API.
+func doPost(ctx context.Context, c *http.Client, path string, data io.Reader, resPtr any) error {
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	req, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		apiBase+path,
+		data,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("authority", "www.binance.com")
+	req.Header.Add("accept", "*/*")
+	req.Header.Add("accept-language", "en-US,en;q=0.8")
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("clienttype", "web")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("lang", "en")
+	req.Header.Add("origin", "https://www.binance.com")
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("sec-fetch-dest", "empty")
+	req.Header.Add("sec-fetch-mode", "cors")
+	req.Header.Add("sec-fetch-site", "same-origin")
+	req.Header.Add("sec-gpc", "1")
+	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
+
+	res, err := c.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to do request: %w", err)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read request body: %w", err)
+	}
+
+	// all of the endpoints are expected to return 200
+	if res.StatusCode != http.StatusOK {
+		return BadStatusError{
+			Status:     res.Status,
+			StatusCode: res.StatusCode,
+			Body:       body,
+		}
+	}
+
+	return json.Unmarshal(body, resPtr)
 }
