@@ -26,7 +26,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 				return
 
 			case <-t.C:
-				u.log.Printf("[%s] Checking for new positions\n", u.id)
+				// u.log.Printf("[%s] Checking for new positions\n", u.id)
 				res, err := u.GetOtherPosition(ctx)
 				if err != nil {
 					ce <- fmt.Errorf("failed to fetch positions: %w", err)
@@ -38,7 +38,7 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 					continue
 				}
 
-				u.log.Printf("[%s] Updating %d positions\n", u.id, len(res.Data.OtherPositionRetList))
+				// u.log.Printf("[%s] Updating %d positions\n", u.id, len(res.Data.OtherPositionRetList))
 				u.handlePositions(res.Data.OtherPositionRetList, cp, ce)
 			}
 		}
@@ -51,33 +51,29 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- error) {
 	// used will be used for checking whether or not a position was already handled
 	// (thus if it's a new position or if it hasn't been present in the latest fetch and thus been closed)
-	used := make(map[uint64]struct{}, len(rps))
+	used := make(map[string]struct{}, len(rps))
 
 	for _, rp := range rps {
 		p := newPosition(rp)
 
-		// check if there are any old positions or if it's a new one
-		h, err := p.hash()
-		if err != nil {
-			ce <- fmt.Errorf("failed to hash a %q position: %w", p.Ticker, err)
-			continue
-		}
-
 		// mark as used
-		used[h] = struct{}{}
+		used[p.Ticker] = struct{}{}
 
-		pp, ok := u.pHashes[h]
+		// retrieve old position
+		pp := u.pHashes[p.Ticker]
 
-		// if there's a record of the same position,
-		// and the amount is the same, then nothing changed so skip
-		if ok && pp.Amount == p.Amount {
+		// amount is the same, then nothing changed so skip
+		if pp.Amount == p.Amount {
 			continue
 		}
 
-		// it's ok on !ok because pp will just be a Position{} so .Amount will be 0
-		p.setType(pp.Amount)
+		// record the previous amount on the new position
+		p.PrevAmount = pp.Amount
 
-		u.log.Printf("[%s] {send: %t} Position change: %d %s %f %s @ %f\n", u.id, !u.isFirst, p.Type, p.Direction, p.Amount, p.Ticker, p.EntryPrice)
+		// determine the current position type and assign
+		p.Type = DeterminePositionType(p.Amount, pp.Amount)
+
+		u.log.Printf("[%s] {send: %t} Position change: %d %s %f -> %f %s @ %f\n", u.id, !u.isFirst, p.Type, p.Direction, p.PrevAmount, p.Amount, p.Ticker, p.EntryPrice)
 
 		// dont send the new position on first run (bc it's not really "new")
 		if !u.isFirst {
@@ -85,12 +81,12 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		}
 
 		// add/update the old position to the current one
-		u.pHashes[h] = p
+		u.pHashes[p.Ticker] = p
 	}
 
 	// check which positions were not present in the latest fetch
-
 	for h, p := range u.pHashes {
+		// position still in the leaderboard
 		if _, ok := used[h]; ok {
 			continue
 		}
@@ -98,10 +94,9 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// position hasn't been updated (is not present in the leaderboard anymore)
 		// thus it has been closed
 
-		pa := p.Amount
-		// position closed = amount set to 0
+		p.Type = Closed
+		p.PrevAmount = p.Amount
 		p.Amount = 0
-		p.setType(pa) // will set to Closed
 
 		cp <- p
 

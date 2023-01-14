@@ -13,7 +13,7 @@ type User struct {
 	UID     string              // Encrypted User ID
 	id      string              // identified used in logging
 	log     *log.Logger         // Logger
-	pHashes map[uint64]Position // hashmap of positions user is currently in
+	pHashes map[string]Position // map of positions user is currently in
 	d       time.Duration       // duration between requests updating current positions
 	c       *http.Client        // http client
 	headers map[string]string
@@ -28,7 +28,7 @@ func NewUser(UID string, opts ...UserOption) User {
 		id:      UID,
 		UID:     UID,
 		log:     logger,
-		pHashes: make(map[uint64]Position),
+		pHashes: make(map[string]Position),
 		d:       time.Second * 5,
 		c:       http.DefaultClient,
 		isFirst: true,

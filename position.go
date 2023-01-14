@@ -3,8 +3,6 @@ package bfldb
 import (
 	"errors"
 	"math"
-
-	"github.com/mitchellh/hashstructure/v2"
 )
 
 var (
@@ -38,26 +36,20 @@ func (pt PositionType) String() string {
 
 // Position represents a position user is in.
 type Position struct {
-	PrevAmount float64 `hash:"ignore"` // previous amount, used for converting into an order
-
-	Type       PositionType   `hash:"ignore"` // Type of the position
+	Type       PositionType   // Type of the position
 	Direction  TradeDirection // Direction (e.g. LONG / SHORT)
 	Ticker     string         // Ticker of the position (e.g. BTCUSDT)
-	EntryPrice float64        `hash:"ignore"` // Entry price
-	MarkPrice  float64        `hash:"ignore"` // Entry price
-	Amount     float64        `hash:"ignore"` // Amount
-	Leverage   int            `hash:"ignore"` // Position leverage
-	Pnl        float64        `hash:"ignore"` // PNL
-	Roe        float64        `hash:"ignore"` // ROE
+	EntryPrice float64        // Entry price
+	MarkPrice  float64        // Entry price
+	Amount     float64        // Amount
+	PrevAmount float64        // previous amount, used for determining position type
+	Leverage   int            // Position leverage
+	Pnl        float64        // PNL
+	Roe        float64        // ROE
 }
 
 // ToOrder converts a position into an Order.
 func (p Position) ToOrder() Order {
-	// == 0 means no position type
-	if p.Type == 0 {
-		p.setType(p.PrevAmount)
-	}
-
 	o := Order{
 		Ticker: p.Ticker,
 
@@ -79,7 +71,9 @@ func (p Position) ToOrder() Order {
 		}
 	}
 
-	if p.Type == Closed && p.Amount == 0 {
+	// opened = nothing changes
+
+	if p.Type == Closed {
 		o.Amount = p.PrevAmount
 	}
 
@@ -94,36 +88,31 @@ func (p Position) ToOrder() Order {
 	return o
 }
 
-// hash hashes a position into an uint64
-func (p Position) hash() (uint64, error) {
-	return hashstructure.Hash(p, hashstructure.FormatV2, nil)
-}
-
-// setType sets the type of the position in accordance with the previous position.
-//
-// This is because Binance API only returns the CURRENT position details so
-// we need to keep track of the previous position manually and detect changes that way.
-func (p *Position) setType(pa float64) {
-	p.PrevAmount = pa
-
-	if pa == 0 {
-		// no previous position, so it's a new one
-		p.Type = Opened
-	} else if pa > p.Amount {
-		// previously saved amount is BIGGER than the current amount
-		// meaning the amount has DECREASED thus the position
-		// has been (partially) closed
-		if p.Amount == 0 {
-			p.Type = Closed
-		} else {
-			p.Type = PartiallyClosed
-		}
-	} else if pa < p.Amount {
-		// previously saved amount is SMALLER than the current amount
-		// meaning the amount has INCREASED thus the position
-		// has been added to
-		p.Type = AddedTo
+// DeterminePositionType determines the type of a position,
+// based on the current and previous position size.
+func DeterminePositionType(amt float64, prevAmt float64) PositionType {
+	if prevAmt == 0 {
+		// no previous amount, so it's a freshly opened position
+		return Opened
 	}
+
+	if prevAmt < amt {
+		// amount increased
+		return AddedTo
+	}
+
+	if prevAmt > amt {
+		// amount decreased
+		return PartiallyClosed
+	}
+
+	if amt == 0 {
+		// no amount, so position is closed
+		return Closed
+	}
+
+	// should never get here...
+	return 0
 }
 
 // newPosition creates a new Position from a rawPosition
