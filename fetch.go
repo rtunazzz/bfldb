@@ -13,6 +13,25 @@ const (
 	apiBase = "https://www.binance.com/bapi/futures/v1/public/future/leaderboard" // Base endpoint
 )
 
+var (
+	defaultHeaders = map[string]string{
+		"authority":       "www.binance.com",
+		"accept":          "*/*",
+		"accept-language": "en-US,en;q=0.8",
+		"cache-control":   "no-cache",
+		"clienttype":      "web",
+		"content-type":    "application/json",
+		"lang":            "en",
+		"origin":          "https://www.binance.com",
+		"pragma":          "no-cache",
+		"sec-fetch-dest":  "empty",
+		"sec-fetch-mode":  "cors",
+		"sec-fetch-site":  "same-origin",
+		"sec-gpc":         "1",
+		"user-agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+	}
+)
+
 // LdbAPIRes represents a response from Binance's Futures LDB API.
 type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
 	Success       bool        `json:"success"`       // Whether or not the request was successful
@@ -49,12 +68,13 @@ type rawPosition struct {
 // GetOtherPosition gets all currently open positions for an user.
 func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, http.DefaultClient, "/getOtherPosition", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return res, doPost(ctx, http.DefaultClient, "/getOtherPosition", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // GetOtherPosition gets all currently open positions for an user.
-func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
-	return GetOtherPosition(ctx, u.UID)
+func (u User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
+	var res LdbAPIRes[UserPositionData]
+	return res, doPost(ctx, u.c, "/getOtherPosition", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -77,12 +97,13 @@ type UserBaseInfo struct {
 // GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
 func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, http.DefaultClient, "/getOtherLeaderboardBaseInfo", strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return res, doPost(ctx, http.DefaultClient, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
-func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
-	return GetOtherLeaderboardBaseInfo(ctx, u.UID)
+func (u User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
+	var res LdbAPIRes[UserBaseInfo]
+	return res, doPost(ctx, u.c, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -97,13 +118,13 @@ type NicknameDetails struct {
 // SearchNickname searches for a nickname.
 func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
 	var res LdbAPIRes[[]NicknameDetails]
-	return res, doPost(ctx, http.DefaultClient, "/searchNickname", strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
+	return res, doPost(ctx, http.DefaultClient, "/searchNickname", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
 }
 
 // ************************************************** Unexported **************************************************
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost(ctx context.Context, c *http.Client, path string, data io.Reader, resPtr any) error {
+func doPost(ctx context.Context, c *http.Client, path string, headers map[string]string, data io.Reader, resPtr any) error {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -117,20 +138,9 @@ func doPost(ctx context.Context, c *http.Client, path string, data io.Reader, re
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Add("authority", "www.binance.com")
-	req.Header.Add("accept", "*/*")
-	req.Header.Add("accept-language", "en-US,en;q=0.8")
-	req.Header.Add("cache-control", "no-cache")
-	req.Header.Add("clienttype", "web")
-	req.Header.Add("content-type", "application/json")
-	req.Header.Add("lang", "en")
-	req.Header.Add("origin", "https://www.binance.com")
-	req.Header.Add("pragma", "no-cache")
-	req.Header.Add("sec-fetch-dest", "empty")
-	req.Header.Add("sec-fetch-mode", "cors")
-	req.Header.Add("sec-fetch-site", "same-origin")
-	req.Header.Add("sec-gpc", "1")
-	req.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	res, err := c.Do(req)
 	if err != nil {

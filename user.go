@@ -16,7 +16,8 @@ type User struct {
 	pHashes map[uint64]Position // hashmap of positions user is currently in
 	d       time.Duration       // duration between requests updating current positions
 	c       *http.Client        // http client
-	isFirst bool                // indicating first fetch
+	headers map[string]string
+	isFirst bool // indicating first fetch
 }
 
 type UserOption func(*User)
@@ -31,6 +32,7 @@ func NewUser(UID string, opts ...UserOption) User {
 		d:       time.Second * 5,
 		c:       http.DefaultClient,
 		isFirst: true,
+		headers: defaultHeaders,
 	}
 
 	// disable logging by default
@@ -75,5 +77,12 @@ func WithCustomRefresh(d time.Duration) UserOption {
 func WithHTTPClient(c *http.Client) UserOption {
 	return func(u *User) {
 		u.c = c
+	}
+}
+
+// WithHeaders sets headers the client uses for every request.
+func WithHeaders(h map[string]string) UserOption {
+	return func(u *User) {
+		u.headers = h
 	}
 }
