@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	apiBase = "https://www.binance.com/bapi/futures/v1/public/future/leaderboard" // Base endpoint
+	apiBase   = "https://www.binance.com/bapi/futures"
+	apiBaseV1 = apiBase + "/v1/public/future/leaderboard"
+	apiBaseV2 = apiBase + "/v2/public/future/leaderboard"
 )
 
 var (
@@ -68,13 +70,13 @@ type rawPosition struct {
 // GetOtherPosition gets all currently open positions for an user.
 func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, http.DefaultClient, "/getOtherPosition", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return res, doPost(ctx, http.DefaultClient, apiBaseV1, "/getOtherPosition", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // GetOtherPosition gets all currently open positions for an user.
 func (u User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, u.c, "/getOtherPosition", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.c, apiBaseV1, "/getOtherPosition", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -97,13 +99,13 @@ type UserBaseInfo struct {
 // GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
 func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, http.DefaultClient, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return res, doPost(ctx, http.DefaultClient, apiBaseV2, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.c, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -118,20 +120,20 @@ type NicknameDetails struct {
 // SearchNickname searches for a nickname.
 func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
 	var res LdbAPIRes[[]NicknameDetails]
-	return res, doPost(ctx, http.DefaultClient, "/searchNickname", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
+	return res, doPost(ctx, http.DefaultClient, apiBaseV1, "/searchNickname", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
 }
 
 // ************************************************** Unexported **************************************************
 
 // doPost POSTs the data passed in to the path on Binance's leaderboard API.
-func doPost(ctx context.Context, c *http.Client, path string, headers map[string]string, data io.Reader, resPtr any) error {
+func doPost(ctx context.Context, c *http.Client, endpoint, path string, headers map[string]string, data io.Reader, resPtr any) error {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		apiBase+path,
+		endpoint+path,
 		data,
 	)
 	if err != nil {
