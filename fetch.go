@@ -99,13 +99,13 @@ type UserBaseInfo struct {
 // GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
 func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, http.DefaultClient, apiBaseV2, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return res, doPost(ctx, http.DefaultClient, apiBaseV2, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", UUID)), &res)
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************
