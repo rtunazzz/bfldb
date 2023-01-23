@@ -85,14 +85,14 @@ func (u User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData]
 type UserBaseInfo struct {
 	NickName               string      `json:"nickName"`               // Nickname
 	UserPhotoURL           string      `json:"userPhotoUrl"`           // Photo URL
-	PositionShared         bool        `json:"positionShared"`         // true if user is sharing their positions, false otherwise
-	DeliveryPositionShared bool        `json:"deliveryPositionShared"` // ???
+	PositionShared         bool        `json:"positionShared"`         // true if user is sharing their USD positions, false otherwise
+	DeliveryPositionShared bool        `json:"deliveryPositionShared"` // true if user is sharing their COIN positions, false otherwise
 	FollowingCount         int         `json:"followingCount"`         // How many people user follows
 	FollowerCount          int         `json:"followerCount"`          // How many people follow user
 	TwitterURL             string      `json:"twitterUrl"`             // Twitter URL
 	Introduction           string      `json:"introduction"`           // Introduction (profile description)
-	TwShared               bool        `json:"twShared"`               // ???
-	IsTwTrader             bool        `json:"isTwTrader"`             // ???
+	TwShared               bool        `json:"twShared"`               // Sharing their TraderWagon
+	IsTwTrader             bool        `json:"isTwTrader"`             // Connected with TraderWagon
 	OpenID                 interface{} `json:"openId"`                 // ???
 }
 
