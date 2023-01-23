@@ -16,8 +16,8 @@ type User struct {
 	pHashes map[string]Position // map of positions user is currently in
 	d       time.Duration       // duration between requests updating current positions
 	c       *http.Client        // http client
-	headers map[string]string
-	isFirst bool // indicating first fetch
+	headers map[string]string   // headers
+	isFirst bool                // indicating first fetch
 }
 
 type UserOption func(*User)
