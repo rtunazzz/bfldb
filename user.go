@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -14,16 +15,18 @@ type User struct {
 	id      string              // identified used in logging
 	log     *log.Logger         // Logger
 	pHashes map[string]Position // map of positions user is currently in
-	d       time.Duration       // duration between requests updating current positions
 	c       *http.Client        // http client
-	headers map[string]string   // headers
 	isFirst bool                // indicating first fetch
+
+	mtx     sync.Mutex        // Synchronization for d and headers
+	d       time.Duration     // duration between requests updating current positions
+	headers map[string]string // headers
 }
 
 type UserOption func(*User)
 
 // NewUser creates a new User with his encrypted UserID.
-func NewUser(UID string, opts ...UserOption) User {
+func NewUser(UID string, opts ...UserOption) *User {
 	u := User{
 		id:      UID,
 		UID:     UID,
@@ -42,7 +45,23 @@ func NewUser(UID string, opts ...UserOption) User {
 		opt(&u)
 	}
 
-	return u
+	return &u
+}
+
+// SetDelay sets the delay between requests updating user's current positions.
+func (u *User) SetDelay(d time.Duration) {
+	u.mtx.Lock()
+	defer u.mtx.Unlock()
+
+	u.d = d
+}
+
+// GetDelay returns the delay between requests updating user's current positions
+func (u *User) GetDelay() time.Duration {
+	u.mtx.Lock()
+	defer u.mtx.Unlock()
+
+	return u.d
 }
 
 // WithID sets user's logging id.
