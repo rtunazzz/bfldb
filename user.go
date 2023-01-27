@@ -64,7 +64,7 @@ func (u *User) Delay() time.Duration {
 	return u.d
 }
 
-// GetDelay returns the delay between requests updating user's current positions
+// SetHeaders sets headers the client uses for every request.
 func (u *User) SetHeaders(h map[string]string) {
 	headers := make(map[string]string, len(h))
 	// copy them so it doesn't matter if the input is modified by caller later
@@ -78,7 +78,7 @@ func (u *User) SetHeaders(h map[string]string) {
 	u.headers = h
 }
 
-// GetDelay returns the delay between requests updating user's current positions
+// Headers returns headers the client uses for every request.
 func (u *User) Headers() map[string]string {
 	u.mtx.Lock()
 	defer u.mtx.Unlock()
