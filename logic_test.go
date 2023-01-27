@@ -3,7 +3,7 @@ package bfldb
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func chanToArrays(cp chan Position, ce chan error) (pos []Position, errs []error) {
@@ -117,8 +117,8 @@ func TestLogic(t *testing.T) {
 		close(cp)
 		close(ce)
 
-		assert.Equal(t, 0, len(errs), "there were some errors")
-		assert.EqualValues(t, tt.outPos, ops, "expected different output positions for test "+tt.msg)
-		assert.EqualValues(t, tt.endPos, ep, "expected different end positions for test "+tt.msg)
+		require.Equal(t, 0, len(errs), "there were some errors")
+		require.EqualValues(t, tt.outPos, ops, "expected different output positions for test "+tt.msg)
+		require.EqualValues(t, tt.endPos, ep, "expected different end positions for test "+tt.msg)
 	}
 }
