@@ -14,9 +14,6 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 	ce := make(chan error)
 
 	go func() {
-		t := time.NewTicker(u.d)
-		defer t.Stop()
-
 		defer close(cp)
 		defer close(ce)
 
@@ -25,21 +22,24 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 			case <-ctx.Done():
 				return
 
-			case <-t.C:
+			default:
 				// u.log.Printf("[%s] Checking for new positions\n", u.id)
 				res, err := u.GetOtherPosition(ctx)
 				if err != nil {
 					ce <- fmt.Errorf("failed to fetch positions: %w", err)
+					time.Sleep(u.d)
 					continue
 				}
 
 				if !res.Success {
 					ce <- fmt.Errorf("failed to fetch positions, bad response message: %v", res.Message)
+					time.Sleep(u.d)
 					continue
 				}
 
 				// u.log.Printf("[%s] Updating %d positions\n", u.id, len(res.Data.OtherPositionRetList))
 				u.handlePositions(res.Data.OtherPositionRetList, cp, ce)
+				time.Sleep(u.d)
 			}
 		}
 	}()
