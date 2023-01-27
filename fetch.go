@@ -76,7 +76,7 @@ func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionD
 // GetOtherPosition gets all currently open positions for an user.
 func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, u.c, apiBaseV1, "/getOtherPosition", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.c, apiBaseV1, "/getOtherPosition", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -105,7 +105,7 @@ func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[Us
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.headers, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
+	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************

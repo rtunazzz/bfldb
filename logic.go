@@ -27,19 +27,19 @@ func (u *User) SubscribePositions(ctx context.Context) (<-chan Position, <-chan 
 				res, err := u.GetOtherPosition(ctx)
 				if err != nil {
 					ce <- fmt.Errorf("failed to fetch positions: %w", err)
-					time.Sleep(u.GetDelay())
+					time.Sleep(u.Delay())
 					continue
 				}
 
 				if !res.Success {
 					ce <- fmt.Errorf("failed to fetch positions, bad response message: %v", res.Message)
-					time.Sleep(u.GetDelay())
+					time.Sleep(u.Delay())
 					continue
 				}
 
 				// u.log.Printf("[%s] Updating %d positions\n", u.id, len(res.Data.OtherPositionRetList))
 				u.handlePositions(res.Data.OtherPositionRetList, cp, ce)
-				time.Sleep(u.GetDelay())
+				time.Sleep(u.Delay())
 			}
 		}
 	}()
