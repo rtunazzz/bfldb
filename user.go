@@ -56,12 +56,41 @@ func (u *User) SetDelay(d time.Duration) {
 	u.d = d
 }
 
-// GetDelay returns the delay between requests updating user's current positions
-func (u *User) GetDelay() time.Duration {
+// Delay returns the delay between requests updating user's current positions
+func (u *User) Delay() time.Duration {
 	u.mtx.Lock()
 	defer u.mtx.Unlock()
 
 	return u.d
+}
+
+// GetDelay returns the delay between requests updating user's current positions
+func (u *User) SetHeaders(h map[string]string) {
+	headers := make(map[string]string, len(h))
+	// copy them so it doesn't matter if the input is modified by caller later
+	for k, v := range h {
+		headers[k] = v
+	}
+
+	u.mtx.Lock()
+	defer u.mtx.Unlock()
+
+	u.headers = h
+}
+
+// GetDelay returns the delay between requests updating user's current positions
+func (u *User) Headers() map[string]string {
+	u.mtx.Lock()
+	defer u.mtx.Unlock()
+
+	headers := make(map[string]string, len(u.headers))
+
+	// copy them so it doesn't matter if they are modified by caller later
+	for k, v := range u.headers {
+		headers[k] = v
+	}
+
+	return headers
 }
 
 // WithID sets user's logging id.
