@@ -69,8 +69,7 @@ type rawPosition struct {
 
 // GetOtherPosition gets all currently open positions for an user.
 func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionData], error) {
-	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, http.DefaultClient, apiBaseV1, "/getOtherPosition", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", UUID)), &res)
+	return NewUser(UUID).GetOtherPosition(ctx)
 }
 
 // GetOtherPosition gets all currently open positions for an user.
@@ -98,8 +97,7 @@ type UserBaseInfo struct {
 
 // GetOtherLeaderboardBaseInfo gets information for the uuid passed in.
 func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[UserBaseInfo], error) {
-	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, http.DefaultClient, apiBaseV2, "/getOtherLeaderboardBaseInfo", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", UUID)), &res)
+	return NewUser(UUID).GetOtherLeaderboardBaseInfo(ctx)
 }
 
 // GetOtherLeaderboardBaseInfo gets information about an user.
