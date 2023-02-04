@@ -11,16 +11,17 @@ import (
 
 // User represents one Binance leaderboard User
 type User struct {
-	UID     string              // Encrypted User ID
-	id      string              // identified used in logging
-	log     *log.Logger         // Logger
-	pHashes map[string]Position // map of positions user is currently in
-	c       *http.Client        // http client
-	isFirst bool                // indicating first fetch
+	UID     string // Encrypted User ID
+	APIBase string // API base used for requests
 
-	mtx     sync.Mutex        // Synchronization for d and headers
-	d       time.Duration     // duration between requests updating current positions
+	mtx     sync.Mutex        // Synchronization for delay and headers
+	delay   time.Duration     // duration between requests updating current positions
 	headers map[string]string // headers
+
+	positions  map[string]Position // map of positions user is currently in
+	client     *http.Client        // http client
+	log        *log.Logger         // Logger
+	firstFetch bool                // indicating first fetch
 }
 
 type UserOption func(*User)
@@ -28,14 +29,14 @@ type UserOption func(*User)
 // NewUser creates a new User with his encrypted UserID.
 func NewUser(UID string, opts ...UserOption) *User {
 	u := User{
-		id:      UID,
-		UID:     UID,
-		log:     logger,
-		pHashes: make(map[string]Position),
-		d:       time.Second * 5,
-		c:       http.DefaultClient,
-		isFirst: true,
-		headers: defaultHeaders,
+		UID:        UID,
+		log:        logger,
+		positions:  make(map[string]Position),
+		delay:      time.Second * 5,
+		client:     http.DefaultClient,
+		firstFetch: true,
+		headers:    defaultHeaders,
+		APIBase:    defaultApiBase,
 	}
 
 	// disable logging by default
@@ -53,7 +54,7 @@ func (u *User) SetDelay(d time.Duration) {
 	u.mtx.Lock()
 	defer u.mtx.Unlock()
 
-	u.d = d
+	u.delay = d
 }
 
 // Delay returns the delay between requests updating user's current positions
@@ -61,7 +62,7 @@ func (u *User) Delay() time.Duration {
 	u.mtx.Lock()
 	defer u.mtx.Unlock()
 
-	return u.d
+	return u.delay
 }
 
 // SetHeaders sets headers the client uses for every request.
@@ -93,13 +94,6 @@ func (u *User) Headers() map[string]string {
 	return headers
 }
 
-// WithID sets user's logging id.
-func WithID(id string) UserOption {
-	return func(u *User) {
-		u.id = id
-	}
-}
-
 // WithCustomLogger writes all user logs using the logger provided.
 func WithCustomLogger(l *log.Logger) UserOption {
 	return func(u *User) {
@@ -117,14 +111,14 @@ func WithLogging() UserOption {
 // WithCustomRefresh sets the duration between requests updating user's current positions.
 func WithCustomRefresh(d time.Duration) UserOption {
 	return func(u *User) {
-		u.d = d
+		u.delay = d
 	}
 }
 
 // WithHTTPClient sets user's HTTP Client.
 func WithHTTPClient(c *http.Client) UserOption {
 	return func(u *User) {
-		u.c = c
+		u.client = c
 	}
 }
 
@@ -132,5 +126,12 @@ func WithHTTPClient(c *http.Client) UserOption {
 func WithHeaders(h map[string]string) UserOption {
 	return func(u *User) {
 		u.headers = h
+	}
+}
+
+// WithTestnet uses the testnet API.
+func WithTestnet() UserOption {
+	return func(u *User) {
+		u.APIBase = "https://testnet.binancefuture.com/bapi/futures"
 	}
 }

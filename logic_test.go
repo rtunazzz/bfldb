@@ -96,7 +96,7 @@ func TestLogic(t *testing.T) {
 
 		// load in initial positions
 		u.handlePositions(tt.initPoss, cp, ce)
-		t.Log("init positions:", u.pHashes)
+		t.Log("init positions:", u.positions)
 
 		go func() {
 			// handle positions
@@ -107,10 +107,10 @@ func TestLogic(t *testing.T) {
 		t.Logf("positions: %+v\n", ops)
 		t.Logf("errors: %+v\n", errs)
 
-		t.Log("end positions:", u.pHashes)
+		t.Log("end positions:", u.positions)
 
-		ep := make([]Position, 0, len(u.pHashes))
-		for _, p := range u.pHashes {
+		ep := make([]Position, 0, len(u.positions))
+		for _, p := range u.positions {
 			ep = append(ep, p)
 		}
 

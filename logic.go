@@ -60,7 +60,7 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		used[p.Ticker] = struct{}{}
 
 		// retrieve old position
-		pp := u.pHashes[p.Ticker]
+		pp := u.positions[p.Ticker]
 
 		// amount is the same, then nothing changed so skip
 		if pp.Amount == p.Amount {
@@ -73,19 +73,19 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// determine the current position type and assign
 		p.Type = DeterminePositionType(p.Amount, pp.Amount)
 
-		u.log.Printf("[%s] {send: %t} Position change: %d %s %f -> %f %s @ %f\n", u.id, !u.isFirst, p.Type, p.Direction, p.PrevAmount, p.Amount, p.Ticker, p.EntryPrice)
+		u.log.Printf("[%s] {send: %t} Position change: %d %s %f -> %f %s @ %f\n", u.UID, !u.firstFetch, p.Type, p.Direction, p.PrevAmount, p.Amount, p.Ticker, p.EntryPrice)
 
 		// dont send the new position on first run (bc it's not really "new")
-		if !u.isFirst {
+		if !u.firstFetch {
 			cp <- p
 		}
 
 		// add/update the old position to the current one
-		u.pHashes[p.Ticker] = p
+		u.positions[p.Ticker] = p
 	}
 
 	// check which positions were not present in the latest fetch
-	for h, p := range u.pHashes {
+	for h, p := range u.positions {
 		// position still in the leaderboard
 		if _, ok := used[h]; ok {
 			continue
@@ -101,11 +101,11 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		cp <- p
 
 		// remove the position from user's positions
-		delete(u.pHashes, h)
+		delete(u.positions, h)
 	}
 
 	// set first run to false because we just completed it
-	if u.isFirst {
-		u.isFirst = false
+	if u.firstFetch {
+		u.firstFetch = false
 	}
 }

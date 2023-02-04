@@ -10,9 +10,7 @@ import (
 )
 
 const (
-	apiBase   = "https://www.binance.com/bapi/futures"
-	apiBaseV1 = apiBase + "/v1/public/future/leaderboard"
-	apiBaseV2 = apiBase + "/v2/public/future/leaderboard"
+	defaultApiBase = "https://www.binance.com/bapi/futures"
 )
 
 var (
@@ -75,7 +73,7 @@ func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionD
 // GetOtherPosition gets all currently open positions for an user.
 func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, u.c, apiBaseV1, "/getOtherPosition", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.client, u.APIBase+"/v1/public/future/leaderboard", "/getOtherPosition", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -103,7 +101,7 @@ func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[Us
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.c, apiBaseV2, "/getOtherLeaderboardBaseInfo", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
+	return res, doPost(ctx, u.client, u.APIBase+"/v2/public/future/leaderboard", "/getOtherLeaderboardBaseInfo", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************
@@ -118,7 +116,7 @@ type NicknameDetails struct {
 // SearchNickname searches for a nickname.
 func SearchNickname(ctx context.Context, nickname string) (LdbAPIRes[[]NicknameDetails], error) {
 	var res LdbAPIRes[[]NicknameDetails]
-	return res, doPost(ctx, http.DefaultClient, apiBaseV1, "/searchNickname", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
+	return res, doPost(ctx, http.DefaultClient, defaultApiBase+"/v1/public/future/leaderboard", "/searchNickname", defaultHeaders, strings.NewReader(fmt.Sprintf("{\"nickname\":\"%s\"}", nickname)), &res)
 }
 
 // ************************************************** Unexported **************************************************
