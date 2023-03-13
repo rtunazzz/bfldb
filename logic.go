@@ -62,8 +62,16 @@ func (u *User) handlePositions(rps []rawPosition, cp chan<- Position, ce chan<- 
 		// retrieve old position
 		pp := u.positions[p.Ticker]
 
-		// amount is the same, then nothing changed so skip
+		// amount is the same, so we dont want to send the update
 		if pp.Amount == p.Amount {
+
+			// update the values that change on every refresh
+			pp.MarkPrice = p.MarkPrice
+			pp.Pnl = p.Pnl
+			pp.Roe = p.Roe
+
+			u.positions[p.Ticker] = pp
+
 			continue
 		}
 
