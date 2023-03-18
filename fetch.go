@@ -13,24 +13,22 @@ const (
 	defaultApiBase = "https://www.binance.com/bapi/futures"
 )
 
-var (
-	defaultHeaders = map[string]string{
-		"authority":       "www.binance.com",
-		"accept":          "*/*",
-		"accept-language": "en-US,en;q=0.8",
-		"cache-control":   "no-cache",
-		"clienttype":      "web",
-		"content-type":    "application/json",
-		"lang":            "en",
-		"origin":          "https://www.binance.com",
-		"pragma":          "no-cache",
-		"sec-fetch-dest":  "empty",
-		"sec-fetch-mode":  "cors",
-		"sec-fetch-site":  "same-origin",
-		"sec-gpc":         "1",
-		"user-agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-	}
-)
+var defaultHeaders = map[string]string{
+	"authority":       "www.binance.com",
+	"accept":          "*/*",
+	"accept-language": "en-US,en;q=0.8",
+	"cache-control":   "no-cache",
+	"clienttype":      "web",
+	"content-type":    "application/json",
+	"lang":            "en",
+	"origin":          "https://www.binance.com",
+	"pragma":          "no-cache",
+	"sec-fetch-dest":  "empty",
+	"sec-fetch-mode":  "cors",
+	"sec-fetch-site":  "same-origin",
+	"sec-gpc":         "1",
+	"user-agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+}
 
 // LdbAPIRes represents a response from Binance's Futures LDB API.
 type LdbAPIRes[T UserPositionData | UserBaseInfo | []NicknameDetails] struct {
@@ -73,7 +71,7 @@ func GetOtherPosition(ctx context.Context, UUID string) (LdbAPIRes[UserPositionD
 // GetOtherPosition gets all currently open positions for an user.
 func (u *User) GetOtherPosition(ctx context.Context) (LdbAPIRes[UserPositionData], error) {
 	var res LdbAPIRes[UserPositionData]
-	return res, doPost(ctx, u.client, u.APIBase+"/v1/public/future/leaderboard", "/getOtherPosition", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
+	return res, doPost(ctx, u.client, u.APIBase()+"/v1/public/future/leaderboard", "/getOtherPosition", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\",\"tradeType\":\"PERPETUAL\"}", u.UID)), &res)
 }
 
 // ************************************************** /getOtherLeaderboardBaseInfo **************************************************
@@ -101,7 +99,7 @@ func GetOtherLeaderboardBaseInfo(ctx context.Context, UUID string) (LdbAPIRes[Us
 // GetOtherLeaderboardBaseInfo gets information about an user.
 func (u *User) GetOtherLeaderboardBaseInfo(ctx context.Context) (LdbAPIRes[UserBaseInfo], error) {
 	var res LdbAPIRes[UserBaseInfo]
-	return res, doPost(ctx, u.client, u.APIBase+"/v2/public/future/leaderboard", "/getOtherLeaderboardBaseInfo", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
+	return res, doPost(ctx, u.client, u.APIBase()+"/v2/public/future/leaderboard", "/getOtherLeaderboardBaseInfo", u.Headers(), strings.NewReader(fmt.Sprintf("{\"encryptedUid\":\"%s\"}", u.UID)), &res)
 }
 
 // ************************************************** /searchNickname **************************************************

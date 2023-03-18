@@ -11,10 +11,10 @@ import (
 
 // User represents one Binance leaderboard User
 type User struct {
-	UID     string // Encrypted User ID
-	APIBase string // API base used for requests
+	UID string // Encrypted User ID
 
-	mtx     sync.Mutex        // Synchronization for delay and headers
+	mtx     sync.RWMutex      // Synchronization for delay, apiBase and headers
+	apiBase string            // API base used for requests
 	delay   time.Duration     // duration between requests updating current positions
 	headers map[string]string // headers
 
@@ -36,7 +36,7 @@ func NewUser(UID string, opts ...UserOption) *User {
 		client:     http.DefaultClient,
 		firstFetch: true,
 		headers:    defaultHeaders,
-		APIBase:    defaultApiBase,
+		apiBase:    defaultApiBase,
 	}
 
 	// disable logging by default
@@ -49,6 +49,22 @@ func NewUser(UID string, opts ...UserOption) *User {
 	return &u
 }
 
+// SetAPIBase sets the API base used for requests.
+func (u *User) SetAPIBase(s string) {
+	u.mtx.Lock()
+	defer u.mtx.Unlock()
+
+	u.apiBase = s
+}
+
+// APIBase returns the API base used for requests.
+func (u *User) APIBase() string {
+	u.mtx.RLock()
+	defer u.mtx.RUnlock()
+
+	return u.apiBase
+}
+
 // SetDelay sets the delay between requests updating user's current positions.
 func (u *User) SetDelay(d time.Duration) {
 	u.mtx.Lock()
@@ -59,8 +75,8 @@ func (u *User) SetDelay(d time.Duration) {
 
 // Delay returns the delay between requests updating user's current positions
 func (u *User) Delay() time.Duration {
-	u.mtx.Lock()
-	defer u.mtx.Unlock()
+	u.mtx.RLock()
+	defer u.mtx.RUnlock()
 
 	return u.delay
 }
@@ -81,8 +97,8 @@ func (u *User) SetHeaders(h map[string]string) {
 
 // Headers returns headers the client uses for every request.
 func (u *User) Headers() map[string]string {
-	u.mtx.Lock()
-	defer u.mtx.Unlock()
+	u.mtx.RLock()
+	defer u.mtx.RUnlock()
 
 	headers := make(map[string]string, len(u.headers))
 
@@ -129,9 +145,9 @@ func WithHeaders(h map[string]string) UserOption {
 	}
 }
 
-// WithTestnet uses the testnet API.
+// WithTestnet uses the testnet API
 func WithTestnet() UserOption {
 	return func(u *User) {
-		u.APIBase = "https://testnet.binancefuture.com/bapi/futures"
+		u.SetAPIBase("https://testnet.binancefuture.com/bapi/future")
 	}
 }
